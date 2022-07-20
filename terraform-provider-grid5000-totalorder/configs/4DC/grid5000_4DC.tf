@@ -1,9 +1,10 @@
 locals {
-  nodes_count = 3
+  nodes_count = 5
   nodes_count_nancy = 2
   nodes_count_rennes = 1
   nodes_count_nantes = 1
-  types = ["C", "M", "M", "M"]
+  nodes_count_grenoble = 1
+  types = ["C", "M", "M", "M", "M"]
   walltime="1:0:0"
 }
 
@@ -34,6 +35,15 @@ resource "grid5000_job" "my_job3" {
   types     = ["deploy"]
 }
 
+resource "grid5000_job" "my_job4" {
+  name      = "Terraform RKE"
+  site      = "grenoble"
+  command   = "sleep 72h"
+  resources = "/nodes=${local.nodes_count_grenoble},walltime=${local.walltime}"
+  properties = "cluster='dahu'"
+  types     = ["deploy"]
+}
+
 resource "grid5000_deployment" "my_deployment1" {
   site        = "nancy"
   environment = "debian10-x64-base"
@@ -52,5 +62,12 @@ resource "grid5000_deployment" "my_deployment3" {
   site        = "nantes"
   environment = "debian10-x64-base"
   nodes       = grid5000_job.my_job3.assigned_nodes
+  key         = file("~/.ssh/id_rsa.pub")
+}
+
+resource "grid5000_deployment" "my_deployment4" {
+  site        = "grenoble"
+  environment = "debian10-x64-base"
+  nodes       = grid5000_job.my_job4.assigned_nodes
   key         = file("~/.ssh/id_rsa.pub")
 }

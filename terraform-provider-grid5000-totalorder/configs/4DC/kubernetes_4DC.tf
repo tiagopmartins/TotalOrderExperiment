@@ -1,8 +1,8 @@
  locals{
-    depends_on = [grid5000_deployment.my_deployment1,grid5000_deployment.my_deployment2,grid5000_deployment.my_deployment3]
+    depends_on = [grid5000_deployment.my_deployment1,grid5000_deployment.my_deployment2,grid5000_deployment.my_deployment3,grid5000_deployment.my_deployment4]
 
-    nodes_list    = setunion(grid5000_deployment.my_deployment1.nodes, grid5000_deployment.my_deployment2.nodes, grid5000_deployment.my_deployment3.nodes)
-    deployment_list = [grid5000_deployment.my_deployment1, grid5000_deployment.my_deployment2, grid5000_deployment.my_deployment3]
+    nodes_list    = setunion(grid5000_deployment.my_deployment1.nodes, grid5000_deployment.my_deployment2.nodes, grid5000_deployment.my_deployment3.nodes, grid5000_deployment.my_deployment4.nodes)
+    deployment_list = [grid5000_deployment.my_deployment1, grid5000_deployment.my_deployment2, grid5000_deployment.my_deployment3, grid5000_deployment.my_deployment4]
 
     deployment1 = [ for node in local.deployment_list[0].nodes : {
         address = node
@@ -30,7 +30,16 @@
               dc = local.deployment_list[2].site
             }
       }]
-    joint_deployment = concat(local.deployment1, local.deployment2, local.deployment3)
+
+    deployment4 = [ for node in local.deployment_list[3].nodes : {
+                address = node
+                internal_address = node
+                role = ["worker"]
+                labels = {
+                  dc = local.deployment_list[3].site
+                }
+          }]
+    joint_deployment = concat(local.deployment1, local.deployment2, local.deployment3, local.deployment4)
 }
 
 output "deployment1_print" {
@@ -45,12 +54,16 @@ output "deployment3_print" {
   value = local.deployment3
 }
 
+output "deployment4_print" {
+  value = local.deployment4
+}
+
 output "joint_deployment_print" {
   value = local.joint_deployment
 }
 
 resource "null_resource" "docker_install" {
-  depends_on = [grid5000_deployment.my_deployment1,grid5000_deployment.my_deployment2,grid5000_deployment.my_deployment3]
+  depends_on = [grid5000_deployment.my_deployment1,grid5000_deployment.my_deployment2,grid5000_deployment.my_deployment3,grid5000_deployment.my_deployment4]
 
   count = local.nodes_count
 
