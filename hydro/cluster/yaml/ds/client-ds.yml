@@ -16,17 +16,17 @@
 apiVersion: apps/v1
 kind: ReplicaSet
 metadata:
-  name: memory-nodes
+  name: client-nodes
   labels: 
-    role: memory
+    role: client
 spec:
   selector:
     matchLabels:
-      role: memory
+      role: client
   template:
     metadata:
       labels:
-        role: memory
+        role: client
     spec:
       topologySpreadConstraints:
         - maxSkew: 1
@@ -34,33 +34,21 @@ spec:
           whenUnsatisfiable: DoNotSchedule
           labelSelector:
             matchLabels:
-              role: memory
+              role: client
       containers:
-      - name: memory-container
+      - name: client-container
         image: jrafaelsoares/faastcc_anna
-        resources:
-          requests:
-            memory: "32G"
-            cpu: "4"
-          limits:
-            cpu: "8"
-        imagePullPolicy: Always
+        imagePullPolicy: IfNotPresent
         env:
         - name: LIBC_FATAL_STDERR_
           value: "1"
         - name: SERVER_TYPE
-          value: "memory"
+          value: "client"
         - name: ROUTING_IPS
           value: ROUTING_IPS_DUMMY
-        - name: MGMT_IP
-          value: MGMT_IP_DUMMY
-        - name: SEED_IP
-          value: SEED_IP_DUMMY
-        - name: MON_IPS
-          value: MON_IPS_DUMMY
         - name: REPO_ORG
           value: FaaSTCC
         - name: REPO_BRANCH
           value: master
       nodeSelector:
-        type: M
+        type: C

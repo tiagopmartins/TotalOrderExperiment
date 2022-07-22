@@ -26,23 +26,16 @@ from hydro.shared import util
 BATCH_SIZE = 100
 
 
-def create_cluster(mem_count, ebs_count, func_count, gpu_count, sched_count,
-                   route_count, bench_count, local, cfile, ssh_key):
+def create_cluster(client_count, server_count, local, cfile):
 
     if 'HYDRO_HOME' not in os.environ:
         raise ValueError('HYDRO_HOME environment variable must be set to be '
                          + 'the directory where all Hydro project repos are '
                          + 'located.')
+
     prefix = os.path.join(os.environ['HYDRO_HOME'], 'cluster/hydro/cluster')
 
     client, apps_client = util.init_k8s()
-
-    # Copy kube config file to management pod, so it can execute kubectl
-    # commands, in addition to SSH keys and KVS config.
-    management_podname = management_spec['metadata']['name']
-    kcname = management_spec['spec']['containers'][0]['name']
-
-    os.system('cp %s anna-config.yml' % cfile)
 
     kubecfg = os.path.join(os.environ['HOME'], '.kube/config')
     os.system('cp %s %s' % (kubecfg,  os.environ['HOME']))
@@ -62,10 +55,16 @@ def create_cluster(mem_count, ebs_count, func_count, gpu_count, sched_count,
         with open(kubecfg, 'w') as file:
             yaml.dump(kube_config_copy, file)
 
-    print('Creating %d routing nodes...' % (route_count))
-    batch_add_nodes(client, apps_client, cfile, ['routing'], [route_count], BATCH_SIZE, prefix)
-    util.get_pod_ips(client, 'role=routing')
+    print('Creating %d server nodes...' % (server_count))
+    batch_add_nodes(client, apps_client, cfile, ['server'], [server_count], BATCH_SIZE, prefix)
+    x = util.get_pod_ips(client, 'role=server')
+    pods = client.list_namespaced_pod(namespace=util.NAMESPACE, label_selector='role=' + kind).items
+    for pname, cname in pods:
+        util.copy_file_to_pod(client, 'anna-config.yml', pname, '/hydro/anna/conf/', cname)
 
+    print('Creating %d client nodes...' % (client_count))
+    batch_add_nodes(client, apps_client, cfile, ['client'], [client_count], BATCH_SIZE, prefix)
+    util.get_pod_ips(client, 'role=client')
 
     print('Setup complete')
 
@@ -91,27 +90,12 @@ if __name__ == '__main__':
                                      specified, we use the default
                                      ($HYDRO_HOME/anna/conf/anna-base.yml).''')
 
-    parser.add_argument('-m', '--memory', nargs=1, type=int, metavar='M',
-                        help='The number of memory nodes to start with ' +
-                        '(required)', dest='memory', required=True)
-    parser.add_argument('-r', '--routing', nargs=1, type=int, metavar='R',
-                        help='The number of routing  nodes in the cluster ' +
-                        '(required)', dest='routing', required=True)
-    parser.add_argument('-f', '--function', nargs=1, type=int, metavar='F',
-                        help='The number of function nodes to start with ' +
-                        '(required)', dest='function', required=True)
-    parser.add_argument('-s', '--scheduler', nargs=1, type=int, metavar='S',
-                        help='The number of scheduler nodes to start with ' +
-                        '(required)', dest='scheduler', required=True)
-    parser.add_argument('-g', '--gpu', nargs='?', type=int, metavar='G',
-                        help='The number of GPU nodes to start with ' +
-                        '(optional)', dest='gpu', default=0)
-    parser.add_argument('-e', '--ebs', nargs='?', type=int, metavar='E',
-                        help='The number of EBS nodes to start with ' +
-                        '(optional)', dest='ebs', default=0)
-    parser.add_argument('-b', '--benchmark', nargs='?', type=int, metavar='B',
-                        help='The number of benchmark nodes in the cluster ' +
-                        '(optional)', dest='benchmark', default=0)
+    parser.add_argument('-s', '--server', nargs=1, type=int, metavar='S',
+                        help='The number of server nodes to start with ' +
+                        '(required)', dest='server', required=True)
+    parser.add_argument('-c', '--client', nargs=1, type=int, metavar='C',
+                        help='The number of client nodes to start with ' +
+                             '(required)', dest='client', required=True)
     parser.add_argument('-l', '--local', nargs='?', type=str2bool, metavar='L',
                         help='Minikube cluster ' +
                              '(optional)', dest='local', default=False)
@@ -120,17 +104,10 @@ if __name__ == '__main__':
                         + ' (optional)', dest='conf',
                         default=os.path.join(os.getenv('HYDRO_HOME', '..'),
                                              'anna/conf/anna-base.yml'))
-    parser.add_argument('--ssh-key', nargs='?', type=str,
-                        help='The SSH key used to configure and connect to ' +
-                        'each node (optional)', dest='sshkey',
-                        default=os.path.join(os.environ['HOME'],
-                                             '.ssh/id_rsa'))
 
 
 
     args = parser.parse_args()
 
     print(args.local)
-    create_cluster(args.memory[0], args.ebs, args.function[0], args.gpu,
-                   args.scheduler[0], args.routing[0], args.benchmark, args.local,
-                   args.conf, args.sshkey)
+    create_cluster(args.client[0], args.server[0], args.local, args.conf)

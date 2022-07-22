@@ -16,17 +16,17 @@
 apiVersion: apps/v1
 kind: ReplicaSet
 metadata:
-  name: routing-nodes
+  name: server-nodes
   labels: 
-    role: routing
+    role: server
 spec:
   selector:
     matchLabels:
-      role: routing
+      role: server
   template:
     metadata:
       labels:
-        role: routing
+        role: server
     spec:
       topologySpreadConstraints:
         - maxSkew: 1
@@ -34,23 +34,18 @@ spec:
           whenUnsatisfiable: DoNotSchedule
           labelSelector:
             matchLabels:
-              role: routing
+              role: server
       containers:
-      - name: routing-container
+      - name: server-container
         image: jrafaelsoares/faastcc_anna
-        resources:
-          requests:
-            memory: "4G"
-            cpu: "4"
-          limits:
-            cpu: "8"
+        imagePullPolicy: IfNotPresent
         env:
         - name: LIBC_FATAL_STDERR_
           value: "1"
         - name: SERVER_TYPE
-          value: r
-        - name: MON_IPS
-          value: MON_IPS_DUMMY
+          value: "server"
+        - name: ROUTING_IPS
+          value: ROUTING_IPS_DUMMY
         - name: REPO_ORG
           value: FaaSTCC
         - name: REPO_BRANCH
