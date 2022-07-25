@@ -28,12 +28,11 @@ BATCH_SIZE = 100
 
 def create_cluster(client_count, server_count, local, cfile):
 
-    #if 'HYDRO_HOME' not in os.environ:
-    #    raise ValueError('HYDRO_HOME environment variable must be set to be '
-    #                     + 'the directory where all Hydro project repos are '
-    #                     + 'located.')
-    a = os.environ['HOME']
-    prefix = os.path.join(os.environ['HOME'], 'Desktop/TotalOrderExperiment/hydro/cluster')
+    if 'HYDRO_HOME' not in os.environ:
+        raise ValueError('HYDRO_HOME environment variable must be set to be '
+                         + 'the directory where all Hydro project repos are '
+                         + 'located.')
+    prefix = os.path.join(os.environ['HYDRO_HOME'], 'cluster/hydro/cluster')
 
     client, apps_client = util.init_k8s()
 
@@ -59,7 +58,7 @@ def create_cluster(client_count, server_count, local, cfile):
     batch_add_nodes(client, apps_client, cfile, ['server'], [server_count], BATCH_SIZE, prefix)
     x = util.get_pod_ips(client, 'role=server')
     with open('server_ips.yml', 'w') as file:
-        documents = yaml.dump({'ips': x}, file)
+        yaml.dump({'ips': x}, file)
     pods = client.list_namespaced_pod(namespace=util.NAMESPACE, label_selector='role=server').items
 
     for pname, cname in get_current_pod_container_pairs(pods):
@@ -72,6 +71,8 @@ def create_cluster(client_count, server_count, local, cfile):
 
     for pname, cname in get_current_pod_container_pairs(pods):
         util.copy_file_to_pod(client, 'server_ips.yml', pname, '/hydro/anna/conf/', cname)
+    os.system('rm server_ips.yml')
+
     print('Setup complete')
 
 def str2bool(v):

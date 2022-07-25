@@ -14,17 +14,12 @@ kubectl create secret docker-registry regcred --namespace=hydro --docker-usernam
 echo "FINISHED SECRET"
 kubectl config set-context --current --namespace=hydro
 # you can change ~/hydro-taras to whatever you like
-#export HYDRO_HOME=~/hydro-storage
+export HYDRO_HOME=~/hydro-storage
 
-#rm -rf $HYDRO_HOME
-
-#mkdir $HYDRO_HOME
-#cd $HYDRO_HOME
-#git clone --recurse-submodules https://github.com/TarasLykhenko/AnnaStorage.git anna
-#git clone --recurse-submodules https://github.com/TarasLykhenko/cloudburstStorage.git cloudburst
-#git clone --recurse-submodules https://github.com/TarasLykhenko/clusterStorage.git cluster
-#git clone --recurse-submodules https://github.com/JRafaelSoares/FastCCS_Coordinator coordinator
-#cd
+rm -rf $HYDRO_HOME
+mkdir $HYDRO_HOME
+cd $HYDRO_HOME
+git clone https://github.com/JRafaelSoares/TotalOrderExperiment cluster
 
 #redis_ip=$(kubectl get nodes -o=jsonpath='{.items[0].status.addresses[0].address}')
 #echo $redis_ip
@@ -33,8 +28,5 @@ kubectl config set-context --current --namespace=hydro
 #cd TccExperimentStorage
 
 #echo $! > save_pid.txt
+cd cluster
 python3 -m hydro.cluster.create_cluster -s 1 -c 1 -l True
-python3 runExperiment.py -t zipf -e 0.5 -r $redis_ip -p 30000 -hh ~/hydro-stuff -f ~/hydro-storage -s "EIGER" -l True
-#python3 runExperiment.py -t tx_size_read -e 2 4 8 16 32 64 -r localhost -p 7000 -hh ~/hydro-stuff -f ~/hydro-storage
-#python3 runExperiment.py -t value_size -e 8 64 128 256 512 1024 2048 -r localhost -p 7000 -hh ~/hydro-stuff -f ~/hydro-storage
-#python3 runExperiment.py -t write_ratio -e 0.01 0.05 0.1 0.2 0.3 0.4 0.5 -r localhost -p 7000 -hh ~/hydro-stuff -f ~/hydro-storage
