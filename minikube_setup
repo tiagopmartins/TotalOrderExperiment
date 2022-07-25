@@ -1,0 +1,12 @@
+#!/bin/bash
+#selectors=("B" "M" "S")
+#num_selectors=${#selectors[@]}
+
+minikube delete --all
+minikube start --kubernetes-version=v1.19.3 --driver=virtualbox
+#nodes_names=($(kubectl get nodes -o=jsonpath="{.items[*]['metadata.name']}"))
+
+#for i in "${!nodes_names[@]}"; do
+#  printf "$i\t${nodes_names[i]}\t${selectors[i]}\n"
+#  kubectl label nodes ${nodes_names[i]} selector=${selectors[i]}
+#done
