@@ -34,7 +34,7 @@ if [[ -z "$REPO_ORG" ]]; then
 fi
 
 if [[ -z "$REPO_BRANCH" ]]; then
-  REPO_BRANCH="main"
+  REPO_BRANCH="master"
 fi
 
 git remote add origin https://github.com/$REPO_ORG/TotalOrderExperiment.git
