@@ -1,7 +1,7 @@
 FROM to-experiment-base:latest
 
 ARG source_branch=master
-ARG build_branch=docker-build
+ARG build_branch=build
 
 USER root
 
