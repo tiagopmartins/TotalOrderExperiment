@@ -18,7 +18,7 @@ gen_yml_list() {
   echo -e "$RESULT"
 }
 
-cd $HYDRO_HOME/anna
+cd $HYDRO_HOME/to-experiment
 mkdir -p conf
 
 # Getting the IP of the network interface (eth0, wlan0, wlan1, ...).

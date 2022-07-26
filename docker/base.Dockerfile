@@ -4,7 +4,6 @@ USER root
 
 # Install all apt-packages needed for the project
 ARG DEBIAN_FRONTEND=noninteractive
-#ENV TZ=Europe
 RUN apt-get update
 RUN apt-get -y install \
     git \
