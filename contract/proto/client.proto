@@ -1,0 +1,29 @@
+syntax = "proto3";
+
+package messages;
+
+import "proto/structs.proto";
+
+// Request for servers to start messaging
+message BeginRequest {
+    // Number of messages to send (if -1 is specified, there is no limit of messages)
+    uint32 msgN = 1;
+}
+
+message BeginReply {
+    ReplyCode code = 1;
+}
+
+// Request for the message log of the server
+message LogRequest {}
+
+message LogReply {
+    string address = 1;
+    repeated string log = 2;
+    ReplyCode code = 3;
+}
+
+service Client {
+    rpc begin (BeginRequest) returns (BeginReply) {}
+    rpc log(LogRequest) returns (LogReply) {}
+}
