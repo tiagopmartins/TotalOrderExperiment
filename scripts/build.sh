@@ -9,14 +9,14 @@ PORT=50001
 # Compile the latest version of the code on the branch we just check out.
 mkdir build && cd build && cmake .. && make -j2 && cd ..
 
-# Do not start the server until hydro/cluster/anna-config.yml has been
+# Do not start the server until hydro/cluster/server_ips.yml has been
 # copied onto this pod -- if we start earlier, we won't know how to configure
 # the system.
-while [[ ! -f "hydro/cluster/anna-config.yml" ]]; do
+while [[ ! -f "hydro/cluster/server_ips.yml" ]]; do
   continue
 done
 
 # Tailor the config file to have process specific information.
-echo -e "server:" >> hydro/cluster/anna-config.yml
-echo -e "    public_ip: $PUBLIC_IP" >> hydro/cluster/anna-config.yml
+echo -e "server:" >> hydro/cluster/server_ips.yml
+echo -e "    public_ip: $PUBLIC_IP" >> hydro/cluster/server_ips.yml
 ./build/server/server $PUBLIC_IP $PORT

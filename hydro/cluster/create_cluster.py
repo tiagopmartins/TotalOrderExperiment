@@ -32,7 +32,7 @@ def create_cluster(client_count, server_count, local, cfile):
         raise ValueError('HYDRO_HOME environment variable must be set to be '
                          + 'the directory where all Hydro project repos are '
                          + 'located.')
-    prefix = os.path.join(os.environ['HYDRO_HOME'], 'cluster/hydro/cluster')
+    prefix = os.path.join(os.environ['HYDRO_HOME'], 'to-experiment/hydro/cluster')
 
     client, apps_client = util.init_k8s()
 
@@ -62,7 +62,7 @@ def create_cluster(client_count, server_count, local, cfile):
     pods = client.list_namespaced_pod(namespace=util.NAMESPACE, label_selector='role=server').items
 
     for pname, cname in get_current_pod_container_pairs(pods):
-        util.copy_file_to_pod(client, 'server_ips.yml', pname, '/hydro/anna/conf/', cname)
+        util.copy_file_to_pod(client, 'server_ips.yml', pname, '/hydro/anna/conf/', cname)  # Change path
 
     print('Creating %d client nodes...' % (client_count))
     batch_add_nodes(client, apps_client, cfile, ['client'], [client_count], BATCH_SIZE, prefix)

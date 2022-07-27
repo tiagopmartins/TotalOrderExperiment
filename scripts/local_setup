@@ -9,9 +9,9 @@ kubectl config set-context --current --namespace=default
 kubectl delete namespaces hydro
 kubectl create namespace hydro
 
-echo "FINISHED NAMESPACE"
-kubectl create secret docker-registry regcred --namespace=hydro --docker-username=jrafaelsoares --docker-password=T7VFrjacdqxs2T
-echo "FINISHED SECRET"
+#echo "FINISHED NAMESPACE"
+#kubectl create secret docker-registry regcred --namespace=hydro --docker-username=jrafaelsoares --docker-password=
+#echo "FINISHED SECRET"
 kubectl config set-context --current --namespace=hydro
 # you can change ~/hydro-taras to whatever you like
 export HYDRO_HOME=~/hydro-storage

@@ -37,18 +37,10 @@ spec:
               role: server
       containers:
       - name: server-container
-        image: jrafaelsoares/faastcc_anna
+        image: jrafaelsoares/faastcc_anna # Change to me
         imagePullPolicy: IfNotPresent
         env:
         - name: LIBC_FATAL_STDERR_
           value: "1"
-        - name: SERVER_TYPE
-          value: "server"
-        - name: ROUTING_IPS
-          value: ROUTING_IPS_DUMMY
-        - name: REPO_ORG
-          value: FaaSTCC
-        - name: REPO_BRANCH
-          value: master
-      nodeSelector:
-        type: S
+      #nodeSelector:
+      #  type: S
