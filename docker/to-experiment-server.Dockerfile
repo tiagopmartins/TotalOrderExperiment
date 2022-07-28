@@ -1,4 +1,4 @@
-FROM to-experiment-base:latest
+FROM base:latest
 
 ARG source_branch=master
 ARG build_branch=build
@@ -6,7 +6,7 @@ ARG build_branch=build
 USER root
 
 # Re-cloning the latest version of the repository
-RUN rm -r $HYDRO_HOME/to-experiment
+RUN rm -r $HYDRO_HOME
 WORKDIR $HYDRO_HOME
 RUN git clone https://github.com/tiagopmartins/TotalOrderExperiment.git to-experiment
 WORKDIR $HYDRO_HOME/to-experiment

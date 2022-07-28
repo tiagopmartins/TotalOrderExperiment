@@ -37,18 +37,10 @@ spec:
               role: client
       containers:
       - name: client-container
-        image: jrafaelsoares/faastcc_anna
+        image: tiagopm/to-experiment
         imagePullPolicy: IfNotPresent
         env:
         - name: LIBC_FATAL_STDERR_
           value: "1"
-        - name: SERVER_TYPE
-          value: "client"
-        - name: ROUTING_IPS
-          value: ROUTING_IPS_DUMMY
-        - name: REPO_ORG
-          value: FaaSTCC
-        - name: REPO_BRANCH
-          value: master
       nodeSelector:
         type: C

@@ -10,7 +10,7 @@ kubectl delete namespaces hydro
 kubectl create namespace hydro
 
 #echo "FINISHED NAMESPACE"
-#kubectl create secret docker-registry regcred --namespace=hydro --docker-username=jrafaelsoares --docker-password=
+#kubectl create secret docker-registry regcred --namespace=hydro --docker-username= --docker-password=
 #echo "FINISHED SECRET"
 kubectl config set-context --current --namespace=hydro
 # you can change ~/hydro-taras to whatever you like
@@ -19,7 +19,7 @@ export HYDRO_HOME=~/hydro-storage
 rm -rf $HYDRO_HOME
 mkdir $HYDRO_HOME
 cd $HYDRO_HOME
-git clone https://github.com/JRafaelSoares/TotalOrderExperiment cluster
+git clone https://github.com/tiagopmartins/TotalOrderExperiment cluster
 
 #redis_ip=$(kubectl get nodes -o=jsonpath='{.items[0].status.addresses[0].address}')
 #echo $redis_ip

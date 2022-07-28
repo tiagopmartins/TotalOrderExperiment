@@ -62,7 +62,7 @@ def create_cluster(client_count, server_count, local, cfile):
     pods = client.list_namespaced_pod(namespace=util.NAMESPACE, label_selector='role=server').items
 
     for pname, cname in get_current_pod_container_pairs(pods):
-        util.copy_file_to_pod(client, 'server_ips.yml', pname, '/hydro/anna/conf/', cname)  # Change path
+        util.copy_file_to_pod(client, 'server_ips.yml', pname, '/hydro/cluster', cname)
 
     print('Creating %d client nodes...' % (client_count))
     batch_add_nodes(client, apps_client, cfile, ['client'], [client_count], BATCH_SIZE, prefix)
@@ -70,7 +70,7 @@ def create_cluster(client_count, server_count, local, cfile):
     pods = client.list_namespaced_pod(namespace=util.NAMESPACE, label_selector='role=client').items
 
     for pname, cname in get_current_pod_container_pairs(pods):
-        util.copy_file_to_pod(client, 'server_ips.yml', pname, '/hydro/anna/conf/', cname)
+        util.copy_file_to_pod(client, 'server_ips.yml', pname, '/hydro/cluster', cname)
     os.system('rm server_ips.yml')
 
     print('Setup complete')
@@ -120,7 +120,7 @@ if __name__ == '__main__':
     os.system("kubectl config set-context --current --namespace=default")
     os.system("kubectl delete namespaces hydro")
     os.system("kubectl create namespace hydro")
-    os.system("kubectl create secret docker-registry regcred --namespace=hydro --docker-username=jrafaelsoares --docker-password=T7VFrjacdqxs2T")
+    os.system("kubectl create secret docker-registry regcred --namespace=hydro --docker-username=tiagopm --docker-password=bET!pr8bRlPHa7=iPraC")
     os.system("kubectl config set-context --current --namespace=hydro")
 
     create_cluster(args.client[0], args.server[0], args.local, args.conf)

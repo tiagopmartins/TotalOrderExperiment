@@ -37,7 +37,7 @@ spec:
               role: server
       containers:
       - name: server-container
-        image: jrafaelsoares/faastcc_anna # Change to me
+        image: tiagopm/to-experiment
         imagePullPolicy: IfNotPresent
         env:
         - name: LIBC_FATAL_STDERR_
