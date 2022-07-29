@@ -1,4 +1,4 @@
-FROM base:latest
+FROM tiagopm/to-experiment:base
 
 ARG source_branch=master
 ARG build_branch=build
