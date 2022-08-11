@@ -106,11 +106,6 @@ if __name__ == '__main__':
     parser.add_argument('-l', '--local', nargs='?', type=str2bool, metavar='L',
                         help='Minikube cluster ' +
                              '(optional)', dest='local', default=False)
-    parser.add_argument('--conf', nargs='?', type=str,
-                        help='The configuration file to start the cluster with'
-                        + ' (optional)', dest='conf',
-                        default=os.path.join(os.getenv('HYDRO_HOME', '..'),
-                                             'anna/conf/anna-base.yml'))
 
 
 
