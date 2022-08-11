@@ -37,7 +37,7 @@ spec:
               role: client
       containers:
       - name: client-container
-        image: tiagopm/to-experiment
+        image: tiagopm/to-experiment:client
         imagePullPolicy: IfNotPresent
         env:
         - name: LIBC_FATAL_STDERR_

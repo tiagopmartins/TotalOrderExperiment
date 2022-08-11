@@ -37,7 +37,7 @@ spec:
               role: server
       containers:
       - name: server-container
-        image: tiagopm/to-experiment
+        image: tiagopm/to-experiment:server
         imagePullPolicy: IfNotPresent
         env:
         - name: LIBC_FATAL_STDERR_
