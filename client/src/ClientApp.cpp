@@ -15,7 +15,7 @@ int main(int argc, char *argv[]) {
         std::cin >> command;
 
         if (command.compare("begin") == 0) {
-            std::cout << "Number of messages to exchange: ";
+            std::cout << "Number of messages for the servers to exchange each: ";
             std::cin >> msgN;
             std::cout << std::endl;
 

@@ -1,4 +1,5 @@
 #include <iostream>
+#include <fstream>
 #include <string>
 #include <thread>
 #include <grpcpp/grpcpp.h>
@@ -6,6 +7,30 @@
 #include "Client.h"
 
 #include "proto/client.grpc.pb.h"
+
+Client::Client() {
+    findServers();
+}
+
+Client::Client(std::shared_ptr<grpc::Channel> channel) : _stub(messages::Client::NewStub(channel)) {
+    findServers();
+}
+
+void Client::findServers() {
+    std::string host;
+    std::ifstream serverList(SERVER_LIST_PATH, std::ios::in);
+
+    if (serverList.is_open() && serverList.good()) {
+        while(getline(serverList, host)) {
+            this->_servers.push_back(host);
+        }
+    
+    } else {
+        std::cerr << "Could not open the server's file correctly." << std::endl;
+    }
+
+    serverList.close();
+}
 
 void Client::printLog(messages::LogReply *reply) {
     std::cout << "-> LOG - " << reply->address() << std::endl;
@@ -36,7 +61,7 @@ void Client::begin(int msgN) {
     std::thread (&Client::AsyncCompleteRpc, this).detach();
 
     // Broadcast begin to servers
-    for (std::string address : SERVERS) {
+    for (std::string address : this->_servers) {
         sendMessage(address, &request);
     }
 }
@@ -46,7 +71,7 @@ void Client::fetchLog() {
     messages::LogReply reply;
     
     // Broadcast log request
-    for (std::string address: SERVERS) {
+    for (std::string address : this->_servers) {
         createStub(address);
         grpc::ClientContext context;
         grpc::Status status = _stub->log(&context, request, &reply);

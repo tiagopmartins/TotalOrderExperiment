@@ -9,6 +9,8 @@
 
 #include "proto/messages.grpc.pb.h"
 
+const std::string SERVER_LIST_PATH = "../hydro/cluster/server_ips.txt";
+
 /**
  * @brief Generic server representation.
  * 
@@ -16,7 +18,7 @@
 class ServerStruct {
 
 private:
-    const std::vector<std::string> SERVERS = {"localhost:50001", "localhost:50002"};   // Server list for testing purposes
+    std::vector<std::string> _servers;
 
     std::unique_ptr<messages::Messenger::Stub> _stub;
 
@@ -27,13 +29,12 @@ private:
     std::vector<std::string> _log;      // Message log
 
 public:
-    ServerStruct(std::string host, std::string port) : _host(host), _port(port),
-            _msgCounter(0) {}
+    ServerStruct(std::string host, std::string port);
 
     ~ServerStruct() {}
 
     std::vector<std::string> servers() {
-        return this->SERVERS;
+        return this->_servers;
     }
 
     std::string host() {
@@ -69,6 +70,8 @@ public:
         std::lock_guard<std::mutex> lockGuard(_logMutex);
         return this->_log;
     }
+
+    void findServers();
 
     /**
      * @brief Adds to the log the register with the specified format.

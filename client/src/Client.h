@@ -8,6 +8,8 @@
 
 #include "proto/client.grpc.pb.h"
 
+const std::string SERVER_LIST_PATH = "../hydro/cluster/server_ips.txt";
+
 /**
  * @brief Client representation.
  * 
@@ -25,21 +27,23 @@ private:
         std::unique_ptr<grpc::ClientAsyncResponseReader<messages::BeginReply>> responseReader;
     };
 
-    const std::vector<std::string> SERVERS = {"localhost:50001", "localhost:50002"};   // Server list for testing purposes
+    std::vector<std::string> _servers;
     
     std::unique_ptr<messages::Client::Stub> _stub;
     grpc::CompletionQueue _cq;                          // Producer-consumer queue for asynchronous communication
 
 public:
-    Client() {}
+    Client();
 
-    Client(std::shared_ptr<grpc::Channel> channel) : _stub(messages::Client::NewStub(channel)) {}
+    Client(std::shared_ptr<grpc::Channel> channel);
 
     ~Client() {}
 
     std::vector<std::string> servers() {
-        return this->SERVERS;
+        return this->_servers;
     }
+
+    void findServers();
 
     void printLog(messages::LogReply *reply);
 
