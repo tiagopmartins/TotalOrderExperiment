@@ -14,4 +14,7 @@ add_executable(client ${SOURCES})
 target_link_libraries(client
     PRIVATE
         proto
+        libredis++.a
+        /usr/local/lib/libhiredis.a
+        -pthread
 )

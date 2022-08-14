@@ -1,11 +1,25 @@
 #include <iostream>
 #include <memory>
 #include <string>
+#include <exception>
+
+#include <sw/redis++/redis++.h>
 #include <grpcpp/grpcpp.h>
 
 #include "Client.h"
 
 int main(int argc, char *argv[]) {
+    sw::redis::Redis *redis;
+
+    try {
+        sw::redis::ConnectionOptions config;
+        config.host = "localhost";
+        redis = new sw::redis::Redis(config);
+
+    } catch (const std::exception &e) {
+        std::cout << "Error while starting up Redis: " << e.what() << std::endl;
+    }
+
     Client *client = new Client();
 
     int msgN = 0;
@@ -36,5 +50,6 @@ int main(int argc, char *argv[]) {
         }
     }
 
+    delete redis;
     return 0;
 }
