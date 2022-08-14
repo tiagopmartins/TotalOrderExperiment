@@ -9,23 +9,34 @@
 
 ServerStruct::ServerStruct(std::string host, std::string port) : _host(host), _port(port),
         _msgCounter(0) {
-    findServers();
+    findProcesses();
 }
 
-void ServerStruct::findServers() {
-    std::string host;
-    std::ifstream serverList(SERVER_LIST_PATH, std::ios::in);
+void ServerStruct::findProcesses() {
+    std::string type, address;
+    std::ifstream addressList(SERVER_LIST_PATH, std::ios::in);
 
-    if (serverList.is_open() && serverList.good()) {
-        while(getline(serverList, host)) {
-            this->_servers.push_back(host);
+    if (addressList.is_open() && addressList.good()) {
+        while(getline(addressList, type)) {
+            getline(addressList, address);  // Get address
+            address.erase(remove_if(address.begin(), address.end(), isspace), address.end());
+
+            if (!(type.compare("server:"))) {
+                this->_servers.push_back(address);
+
+            } else if (!(type.compare("client:"))) {
+                this->_clients.push_back(address);
+            
+            } else {
+                std::cerr << SERVER_LIST_PATH << " with bad entry: " << type << std::endl;
+            }
         }
     
     } else {
-        std::cerr << "Could not open the server's file correctly." << std::endl;
+        std::cerr << "Could not open the addresses' file correctly." << std::endl;
     }
 
-    serverList.close();
+    addressList.close();
 }
 
 void ServerStruct::insertLog(std::string address, int msgID) {
