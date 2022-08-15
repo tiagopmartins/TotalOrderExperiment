@@ -46,11 +46,10 @@ public:
             msgRequest.set_address(_server->host() + ":" + _server->port());
             msgRequest.set_id(_server->msgCounter());
 
-            // Deliver the message to itself
-            std::mutex logMutex;
-            logMutex.lock();
+            // Deliver the message to itself first
+            std::unique_lock<std::shared_mutex> lock(*(_server->logMutex()));
             _server->insertLog(_server->host() + ":" + _server->port(), _server->msgCounter());
-            logMutex.unlock();
+            lock.unlock();
 
             _server->incrementMsgCounter();
 
@@ -75,12 +74,11 @@ public:
         std::cout << "-> Received log request\n" << std::endl;
 
         // Filling reply with the log information
-        std::mutex logMutex;
-        logMutex.lock();
+        std::shared_lock<std::shared_mutex> lock(*(_server->logMutex()));
         for (std::string msg : _server->log()) {
             reply->add_log(msg);
         }
-        logMutex.unlock();
+        lock.unlock();
 
         reply->set_address(_server->host() + ":" + _server->port());
         reply->set_code(messages::ReplyCode::OK);

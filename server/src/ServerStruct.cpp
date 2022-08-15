@@ -8,10 +8,9 @@
 #include "proto/messages.grpc.pb.h"
 
 ServerStruct::ServerStruct(std::string host, std::string port) : _host(host), _port(port),
-        _msgCounter(0) {
+        _msgCounter(0), _seqN(0) {
     findProcesses();
     this->_seq = electLeader();
-    std::cout << this->_seq << std::endl;
 }
 
 void ServerStruct::findProcesses() {
@@ -42,7 +41,7 @@ void ServerStruct::findProcesses() {
 }
 
 void ServerStruct::insertLog(std::string address, int msgID) {
-    std::lock_guard<std::mutex> lockGuard(_logMutex);
+    std::lock_guard<std::shared_mutex> lockGuard(_logMutex);
     this->_log.push_back(address + " " + std::to_string(msgID));
 }
 
@@ -65,6 +64,29 @@ void ServerStruct::sendMessage(std::string address, messages::MessageRequest req
 
     } else {
         std::cerr << "-> Failed to send message to " + address << "\n" <<
+            "\tError " << status.error_code() << ": " << status.error_message() << '\n' << std::endl;
+    }
+}
+
+void ServerStruct::sendSequencerNumber(std::string address, int msgId) {
+    messages::SeqNumberRequest seqNumRequest;
+    messages::SeqNumberReply seqNumReply;
+
+    seqNumRequest.set_msgid(msgId);
+    std::unique_lock<std::mutex> lock(_seqNMutex);
+    seqNumRequest.set_seqn(this->_seqN);
+    this->_seqN++;
+    lock.unlock();
+
+    createStub(address);
+    grpc::ClientContext context;
+    grpc::Status status = _stub->sendSeqNumber(&context, seqNumRequest, &seqNumReply);
+
+    if (status.ok()) {
+        std::cout << "-> Successfully sent sequence number to " + address << " (message ID: " << msgId << ")\n" << std::endl;
+
+    } else {
+        std::cerr << "-> Failed to send sequence number to " + address << " (message ID: " << msgId << ")\n" + address << "\n" <<
             "\tError " << status.error_code() << ": " << status.error_message() << '\n' << std::endl;
     }
 }

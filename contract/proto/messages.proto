@@ -13,6 +13,16 @@ message MessageReply {
     ReplyCode code = 1;
 }
 
+message SeqNumberRequest {
+    uint32 msgId = 1;
+    uint32 seqN = 2;
+}
+
+message SeqNumberReply {
+    ReplyCode code = 1;
+}
+
 service Messenger {
     rpc send (MessageRequest) returns (MessageReply) {}
+    rpc sendSeqNumber (SeqNumberRequest) returns (SeqNumberReply) {}
 }

@@ -5,6 +5,7 @@
 #include <vector>
 #include <memory>
 #include <mutex>
+#include <shared_mutex>
 #include <grpcpp/grpcpp.h>
 
 #include "proto/messages.grpc.pb.h"
@@ -30,8 +31,11 @@ private:
     int _msgCounter;
     std::vector<std::string> _log;      // Message log
 
+    int _seqN;  // Sequence number counter (used by the sequencer)
+
     // Mutexes
-    std::mutex _msgCounterMutex, _logMutex;
+    std::mutex _msgCounterMutex, _seqNMutex;
+    std::shared_mutex _logMutex;
 
 public:
     ServerStruct(std::string host, std::string port);
@@ -81,8 +85,12 @@ public:
     }
 
     std::vector<std::string> log() {
-        std::lock_guard<std::mutex> lockGuard(_logMutex);
+        std::lock_guard<std::shared_mutex> lockGuard(_logMutex);
         return this->_log;
+    }
+
+    std::shared_mutex* logMutex() {
+        return &this->_logMutex;
     }
 
     /**
@@ -120,6 +128,15 @@ public:
      */
     void sendMessage(std::string address, messages::MessageRequest request,
             messages::MessageReply *reply);
+
+    /**
+     * @brief Sends a sequence number to a process regarding the
+     * message specified by it's message ID.
+     * 
+     * @param address 
+     * @param msgId 
+     */
+    void sendSequencerNumber(std::string address, int msgId);
 
 };
 

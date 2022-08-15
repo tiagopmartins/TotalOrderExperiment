@@ -2,6 +2,7 @@
 #define MESSAGE_SERVICE_IMPL_H
 
 #include <memory>
+#include <shared_mutex>
 
 #include "ServerStruct.h"
 
@@ -36,7 +37,20 @@ public:
         std::cout << "-> Receiving message from " << request->address()
             << " with message ID " << request->id() << '\n' << std::endl;
 
+        std::unique_lock<std::shared_mutex> lock(*(_server->logMutex()));
         _server->insertLog(request->address(), request->id());
+        lock.unlock();
+
+        reply->set_code(messages::ReplyCode::OK);
+        return grpc::Status::OK;
+    }
+
+    virtual grpc::Status sendSeqNumber(grpc::ServerContext *context, const messages::SeqNumberRequest *request,
+            messages::SeqNumberReply *reply) override {
+        std::cout << "-> Receiving sequence number" << " (message ID: "
+            << request->msgid() << ")\n" << std::endl;
+
+        // TODO
 
         reply->set_code(messages::ReplyCode::OK);
         return grpc::Status::OK;
