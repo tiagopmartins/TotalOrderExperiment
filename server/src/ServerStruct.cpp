@@ -10,6 +10,8 @@
 ServerStruct::ServerStruct(std::string host, std::string port) : _host(host), _port(port),
         _msgCounter(0) {
     findProcesses();
+    this->_seq = electLeader();
+    std::cout << this->_seq << std::endl;
 }
 
 void ServerStruct::findProcesses() {
@@ -40,13 +42,16 @@ void ServerStruct::findProcesses() {
 }
 
 void ServerStruct::insertLog(std::string address, int msgID) {
-    std::mutex _logMutex;
     std::lock_guard<std::mutex> lockGuard(_logMutex);
     this->_log.push_back(address + " " + std::to_string(msgID));
 }
 
 void ServerStruct::createStub(std::string address) {
     _stub = messages::Messenger::NewStub(grpc::CreateChannel(address, grpc::InsecureChannelCredentials()));
+}
+
+std::string ServerStruct::electLeader() {
+    return this->_servers[0];
 }
 
 void ServerStruct::sendMessage(std::string address, messages::MessageRequest request,

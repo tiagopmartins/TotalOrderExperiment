@@ -43,6 +43,10 @@ public:
         return this->_servers;
     }
 
+    /**
+     * @brief Finds all the processes alive and stores them.
+     * 
+     */
     void findProcesses();
 
     void printLog(messages::LogReply *reply);

@@ -20,6 +20,7 @@ class ServerStruct {
 private:
     std::vector<std::string> _servers;
     std::vector<std::string> _clients;
+    std::string _seq;   // Sequencer
 
     std::unique_ptr<messages::Messenger::Stub> _stub;
 
@@ -28,6 +29,9 @@ private:
 
     int _msgCounter;
     std::vector<std::string> _log;      // Message log
+
+    // Mutexes
+    std::mutex _msgCounterMutex, _logMutex;
 
 public:
     ServerStruct(std::string host, std::string port);
@@ -42,12 +46,20 @@ public:
         return this->_clients;
     }
 
+    std::string seq() {
+        return this->_seq;
+    }
+
     std::string host() {
         return this->_host;
     }
 
     std::string port() {
         return this->_port;
+    }
+
+    void seq(std::string seq) {
+        this->_seq = seq;
     }
 
     void host(std::string host) {
@@ -59,23 +71,24 @@ public:
     }
 
     int msgCounter() {
-        std::mutex _msgCounterMutex;
         std::lock_guard<std::mutex> lockGuard(_msgCounterMutex);
         return this->_msgCounter;
     }
 
     void incrementMsgCounter() {
-        std::mutex _msgCounterMutex;
         std::lock_guard<std::mutex> lockGuard(_msgCounterMutex);
         this->_msgCounter++;
     }
 
     std::vector<std::string> log() {
-        std::mutex _logMutex;
         std::lock_guard<std::mutex> lockGuard(_logMutex);
         return this->_log;
     }
 
+    /**
+     * @brief Finds all the processes alive and stores them.
+     * 
+     */
     void findProcesses();
 
     /**
@@ -87,6 +100,16 @@ public:
     void insertLog(std::string address, int msgID);
 
     void createStub(std::string address);
+
+    /**
+     * @brief Leader election: chooses a leader based on the server list.
+     * The file is the same for all processes and so it's possible to elect a
+     * leader based on a deterministic computation, without the need to exchange
+     * messages.
+     * 
+     * @return Address of the leader.
+     */
+    std::string electLeader();
 
     /**
      * @brief Sends a message to the specified address.
