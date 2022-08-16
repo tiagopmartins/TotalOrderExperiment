@@ -8,34 +8,49 @@
 #include "proto/messages.grpc.pb.h"
 
 ServerStruct::ServerStruct(std::string host, std::string port) : _host(host), _port(port),
-        _msgCounter(0) {
-    findServers();
+        _msgCounter(0), _seqN(0) {
+    findProcesses();
+    this->_seq = electLeader();
 }
 
-void ServerStruct::findServers() {
-    std::string host;
-    std::ifstream serverList(SERVER_LIST_PATH, std::ios::in);
+void ServerStruct::findProcesses() {
+    std::string type, address;
+    std::ifstream addressList(SERVER_LIST_PATH, std::ios::in);
 
-    if (serverList.is_open() && serverList.good()) {
-        while(getline(serverList, host)) {
-            this->_servers.push_back(host);
+    if (addressList.is_open() && addressList.good()) {
+        while(getline(addressList, type)) {
+            getline(addressList, address);  // Get address
+            address.erase(remove_if(address.begin(), address.end(), isspace), address.end());
+
+            if (!(type.compare("server:"))) {
+                this->_servers.push_back(address);
+
+            } else if (!(type.compare("client:"))) {
+                this->_clients.push_back(address);
+            
+            } else {
+                std::cerr << SERVER_LIST_PATH << " with bad entry: " << type << std::endl;
+            }
         }
     
     } else {
-        std::cerr << "Could not open the server's file correctly." << std::endl;
+        std::cerr << "Could not open the addresses' file correctly." << std::endl;
     }
 
-    serverList.close();
+    addressList.close();
 }
 
 void ServerStruct::insertLog(std::string address, int msgID) {
-    std::mutex _logMutex;
-    std::lock_guard<std::mutex> lockGuard(_logMutex);
+    std::lock_guard<std::shared_mutex> lockGuard(_logMutex);
     this->_log.push_back(address + " " + std::to_string(msgID));
 }
 
 void ServerStruct::createStub(std::string address) {
     _stub = messages::Messenger::NewStub(grpc::CreateChannel(address, grpc::InsecureChannelCredentials()));
+}
+
+std::string ServerStruct::electLeader() {
+    return this->_servers[0];
 }
 
 void ServerStruct::sendMessage(std::string address, messages::MessageRequest request,
@@ -49,6 +64,29 @@ void ServerStruct::sendMessage(std::string address, messages::MessageRequest req
 
     } else {
         std::cerr << "-> Failed to send message to " + address << "\n" <<
+            "\tError " << status.error_code() << ": " << status.error_message() << '\n' << std::endl;
+    }
+}
+
+void ServerStruct::sendSequencerNumber(std::string address, int msgId) {
+    messages::SeqNumberRequest seqNumRequest;
+    messages::SeqNumberReply seqNumReply;
+
+    seqNumRequest.set_msgid(msgId);
+    std::unique_lock<std::mutex> lock(_seqNMutex);
+    seqNumRequest.set_seqn(this->_seqN);
+    this->_seqN++;
+    lock.unlock();
+
+    createStub(address);
+    grpc::ClientContext context;
+    grpc::Status status = _stub->sendSeqNumber(&context, seqNumRequest, &seqNumReply);
+
+    if (status.ok()) {
+        std::cout << "-> Successfully sent sequence number to " + address << " (message ID: " << msgId << ")\n" << std::endl;
+
+    } else {
+        std::cerr << "-> Failed to send sequence number to " + address << " (message ID: " << msgId << ")\n" + address << "\n" <<
             "\tError " << status.error_code() << ": " << status.error_message() << '\n' << std::endl;
     }
 }

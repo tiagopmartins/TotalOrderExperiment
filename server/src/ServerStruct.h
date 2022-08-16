@@ -5,11 +5,12 @@
 #include <vector>
 #include <memory>
 #include <mutex>
+#include <shared_mutex>
 #include <grpcpp/grpcpp.h>
 
 #include "proto/messages.grpc.pb.h"
 
-const std::string SERVER_LIST_PATH = "../hydro/cluster/server_ips.txt";
+const std::string SERVER_LIST_PATH = "../hydro/cluster/server_ips.yml";
 
 /**
  * @brief Generic server representation.
@@ -19,6 +20,8 @@ class ServerStruct {
 
 private:
     std::vector<std::string> _servers;
+    std::vector<std::string> _clients;
+    std::string _seq;   // Sequencer
 
     std::unique_ptr<messages::Messenger::Stub> _stub;
 
@@ -27,6 +30,12 @@ private:
 
     int _msgCounter;
     std::vector<std::string> _log;      // Message log
+
+    int _seqN;  // Sequence number counter (used by the sequencer)
+
+    // Mutexes
+    std::mutex _seqNMutex;
+    std::shared_mutex _msgCounterMutex, _logMutex;
 
 public:
     ServerStruct(std::string host, std::string port);
@@ -37,12 +46,24 @@ public:
         return this->_servers;
     }
 
+    std::vector<std::string> clients() {
+        return this->_clients;
+    }
+
+    std::string seq() {
+        return this->_seq;
+    }
+
     std::string host() {
         return this->_host;
     }
 
     std::string port() {
         return this->_port;
+    }
+
+    void seq(std::string seq) {
+        this->_seq = seq;
     }
 
     void host(std::string host) {
@@ -54,24 +75,32 @@ public:
     }
 
     int msgCounter() {
-        std::mutex _msgCounterMutex;
-        std::lock_guard<std::mutex> lockGuard(_msgCounterMutex);
+        //std::lock_guard<std::mutex> lockGuard(_msgCounterMutex);
         return this->_msgCounter;
     }
 
     void incrementMsgCounter() {
-        std::mutex _msgCounterMutex;
-        std::lock_guard<std::mutex> lockGuard(_msgCounterMutex);
+        std::lock_guard<std::shared_mutex> lockGuard(_msgCounterMutex);
         this->_msgCounter++;
     }
 
-    std::vector<std::string> log() {
-        std::mutex _logMutex;
-        std::lock_guard<std::mutex> lockGuard(_logMutex);
+    std::vector<std::string> log() {;
         return this->_log;
     }
 
-    void findServers();
+    std::shared_mutex* msgCounterMutex() {
+        return &this->_msgCounterMutex;
+    }
+
+    std::shared_mutex* logMutex() {
+        return &this->_logMutex;
+    }
+
+    /**
+     * @brief Finds all the processes alive and stores them.
+     * 
+     */
+    void findProcesses();
 
     /**
      * @brief Adds to the log the register with the specified format.
@@ -84,6 +113,16 @@ public:
     void createStub(std::string address);
 
     /**
+     * @brief Leader election: chooses a leader based on the server list.
+     * The file is the same for all processes and so it's possible to elect a
+     * leader based on a deterministic computation, without the need to exchange
+     * messages.
+     * 
+     * @return Address of the leader.
+     */
+    std::string electLeader();
+
+    /**
      * @brief Sends a message to the specified address.
      * 
      * @param address 
@@ -92,6 +131,15 @@ public:
      */
     void sendMessage(std::string address, messages::MessageRequest request,
             messages::MessageReply *reply);
+
+    /**
+     * @brief Sends a sequence number to a process regarding the
+     * message specified by it's message ID.
+     * 
+     * @param address 
+     * @param msgId 
+     */
+    void sendSequencerNumber(std::string address, int msgId);
 
 };
 

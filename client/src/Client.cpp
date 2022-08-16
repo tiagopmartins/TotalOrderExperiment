@@ -9,27 +9,38 @@
 #include "proto/client.grpc.pb.h"
 
 Client::Client() {
-    findServers();
+    findProcesses();
 }
 
 Client::Client(std::shared_ptr<grpc::Channel> channel) : _stub(messages::Client::NewStub(channel)) {
-    findServers();
+    findProcesses();
 }
 
-void Client::findServers() {
-    std::string host;
-    std::ifstream serverList(SERVER_LIST_PATH, std::ios::in);
+void Client::findProcesses() {
+    std::string type, address;
+    std::ifstream addressList(SERVER_LIST_PATH, std::ios::in);
 
-    if (serverList.is_open() && serverList.good()) {
-        while(getline(serverList, host)) {
-            this->_servers.push_back(host);
+    if (addressList.is_open() && addressList.good()) {
+        while(getline(addressList, type)) {
+            getline(addressList, address);  // Get address
+            address.erase(remove_if(address.begin(), address.end(), isspace), address.end());
+
+            if (!(type.compare("server:"))) {
+                this->_servers.push_back(address);
+
+            } else if (!(type.compare("client:"))) {
+                continue;  // Discard client address
+            
+            } else {
+                std::cerr << SERVER_LIST_PATH << " with bad entry: " << type << std::endl;
+            }
         }
     
     } else {
-        std::cerr << "Could not open the server's file correctly." << std::endl;
+        std::cerr << "Could not open the addresses' file correctly." << std::endl;
     }
 
-    serverList.close();
+    addressList.close();
 }
 
 void Client::printLog(messages::LogReply *reply) {
