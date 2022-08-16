@@ -37,9 +37,7 @@ public:
         std::cout << "-> Receiving message from " << request->address()
             << " with message ID " << request->id() << '\n' << std::endl;
 
-        std::unique_lock<std::shared_mutex> lock(*(_server->logMutex()));
         _server->insertLog(request->address(), request->id());
-        lock.unlock();
 
         reply->set_code(messages::ReplyCode::OK);
         return grpc::Status::OK;

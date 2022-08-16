@@ -43,11 +43,11 @@ public:
             messages::MessageRequest msgRequest;
             messages::MessageReply msgReply;
 
+            std::shared_lock<std::shared_mutex> lock(*(_server->msgCounterMutex()));
             msgRequest.set_address(_server->host() + ":" + _server->port());
             msgRequest.set_id(_server->msgCounter());
 
             // Deliver the message to itself first
-            std::unique_lock<std::shared_mutex> lock(*(_server->logMutex()));
             _server->insertLog(_server->host() + ":" + _server->port(), _server->msgCounter());
             lock.unlock();
 

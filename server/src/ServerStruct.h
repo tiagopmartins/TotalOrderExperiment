@@ -34,8 +34,8 @@ private:
     int _seqN;  // Sequence number counter (used by the sequencer)
 
     // Mutexes
-    std::mutex _msgCounterMutex, _seqNMutex;
-    std::shared_mutex _logMutex;
+    std::mutex _seqNMutex;
+    std::shared_mutex _msgCounterMutex, _logMutex;
 
 public:
     ServerStruct(std::string host, std::string port);
@@ -75,18 +75,21 @@ public:
     }
 
     int msgCounter() {
-        std::lock_guard<std::mutex> lockGuard(_msgCounterMutex);
+        //std::lock_guard<std::mutex> lockGuard(_msgCounterMutex);
         return this->_msgCounter;
     }
 
     void incrementMsgCounter() {
-        std::lock_guard<std::mutex> lockGuard(_msgCounterMutex);
+        std::lock_guard<std::shared_mutex> lockGuard(_msgCounterMutex);
         this->_msgCounter++;
     }
 
-    std::vector<std::string> log() {
-        std::lock_guard<std::shared_mutex> lockGuard(_logMutex);
+    std::vector<std::string> log() {;
         return this->_log;
+    }
+
+    std::shared_mutex* msgCounterMutex() {
+        return &this->_msgCounterMutex;
     }
 
     std::shared_mutex* logMutex() {
