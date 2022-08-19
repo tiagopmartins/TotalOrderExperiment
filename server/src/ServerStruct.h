@@ -141,6 +141,19 @@ public:
      */
     void sendSequencerNumber(std::string address, int msgId);
 
+    /**
+     * @brief Begins the message exchange between servers.
+     * 
+     * @param msgN Number of messages to exchange.
+     */
+    void begin(int msgN);
+
+    /**
+     * @brief Fetches the log to send to the client.
+     * 
+     */
+    void fetch();
+
 };
 
 #endif

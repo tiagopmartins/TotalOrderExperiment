@@ -1,6 +1,7 @@
 #include <iostream>
 #include <memory>
 #include <string>
+#include <string_view>
 #include <exception>
 
 #include <sw/redis++/redis++.h>
@@ -8,12 +9,19 @@
 
 #include "Client.h"
 
+const int EXPECTED_ARGS_N = 2;      // Expected number of arguments passed to the program
+
 int main(int argc, char *argv[]) {
+    if (argc != EXPECTED_ARGS_N) {
+        std::cerr << "Invalid number of arguments. Please, specify only the host of the server." << std::endl;
+        return -1;
+    }
+
     sw::redis::Redis *redis;
 
     try {
         sw::redis::ConnectionOptions config;
-        config.host = "localhost";
+        config.host = argv[1];
         redis = new sw::redis::Redis(config);
 
     } catch (const std::exception &e) {
@@ -38,11 +46,15 @@ int main(int argc, char *argv[]) {
                 continue;
             }
 
-            client->begin(msgN);
+            std::string_view beginCmd{ "begin " + std::to_string(msgN) };
+            redis->publish("", beginCmd);
+            //client->begin(msgN);
         }
 
         else if (command.compare("fetch") == 0) {
-            client->fetchLog();
+            std::string_view fetchCmd{ "fetch" };
+            redis->publish("", fetchCmd);
+            //client->fetchLog();
         }
 
         else {
