@@ -20,8 +20,6 @@ void ServerStruct::findProcesses() {
     if (addressList.is_open() && addressList.good()) {
         while (getline(addressList, type)) {
             getline(addressList, address);  // Get address
-            std::cout << type << std::endl;
-            std::cout << address << std::endl;
             address.erase(remove_if(address.begin(), address.end(), isspace), address.end());
 
             if (!(type.compare("server:"))) {
