@@ -15,5 +15,5 @@ RUN git pull
 RUN git remote remove origin && git remote add origin https://github.com/tiagopmartins/TotalOrderExperiment.git
 
 RUN git fetch origin && git checkout -b $build_branch origin/$source_branch
-RUN bash scripts/build_client.sh -j2 -bRelease
+CMD bash scripts/build_client.sh -j2 -bRelease
 WORKDIR $HYDRO_HOME/to-experiment
