@@ -32,8 +32,9 @@ def create_cluster(client_count, server_count, local, cfile):
         raise ValueError('HYDRO_HOME environment variable must be set to be '
                          + 'the directory where all Hydro project repos are '
                          + 'located.')
-    prefix = os.path.join(os.environ['HYDRO_HOME'], 'to-experiment/hydro/cluster')
-
+    print(os.environ['HYDRO_HOME'])
+    prefix = os.path.join(os.environ['HYDRO_HOME'], 'hydro/cluster')
+    print(prefix)
     client, apps_client = util.init_k8s()
 
     kubecfg = os.path.join(os.environ['HOME'], '.kube/config')
@@ -118,4 +119,4 @@ if __name__ == '__main__':
     os.system("kubectl create secret docker-registry regcred --namespace=hydro --docker-username=tiagopm --docker-password=bET!pr8bRlPHa7=iPraC")
     os.system("kubectl config set-context --current --namespace=hydro")
 
-    create_cluster(args.client[0], args.server[0], args.local, args.conf)
+    create_cluster(args.client[0], args.server[0], args.local, [])
