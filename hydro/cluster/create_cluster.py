@@ -33,7 +33,7 @@ def create_cluster(client_count, server_count, local, cfile):
                          + 'the directory where all Hydro project repos are '
                          + 'located.')
     print(os.environ['HYDRO_HOME'])
-    prefix = os.path.join(os.environ['HYDRO_HOME'], 'cluster')
+    prefix = os.path.join(os.environ['HYDRO_HOME'], 'cluster/hydro/cluster')
     print(prefix)
     client, apps_client = util.init_k8s()
 
