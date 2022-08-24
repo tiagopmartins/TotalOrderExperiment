@@ -17,8 +17,8 @@ while [[ ! -f "hydro/cluster/server_ips.yml" ]]; do
 done
 
 # Tailor the config file to have process specific information.
-echo "server:\n" >> hydro/cluster/server_ips.yml
-echo "    $PUBLIC_IP\n" >> hydro/cluster/server_ips.yml
+echo -e "server:" >> hydro/cluster/server_ips.yml
+echo -e "    $PUBLIC_IP" >> hydro/cluster/server_ips.yml
 
 # Running the server.
 ./build/server/server $PUBLIC_IP $PORT
