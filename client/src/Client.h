@@ -8,7 +8,7 @@
 
 #include "proto/client.grpc.pb.h"
 
-const std::string SERVER_LIST_PATH = "../hydro/cluster/server_ips.yml";
+const std::string SERVER_LIST_PATH = "hydro/cluster/server_ips.yml";
 
 /**
  * @brief Client representation.
