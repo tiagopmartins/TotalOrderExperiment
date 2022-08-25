@@ -143,7 +143,8 @@ def get_service_address(client, svc_name):
 # commmit: 12f1443895e80ee24d689c419b5642de96c58cc8/
 # file: examples/exec.py line 101
 def copy_file_to_pod(client, file_path, pod_name, pod_path, container):
-    exec_command = ['tar', 'xvf', '-', '-C', pod_path]
+    #exec_command = ['tar', 'xmvf', '-', '-C', pod_path]
+    exec_command = ['echo', pod_path]
     resp = stream(client.connect_get_namespaced_pod_exec, pod_name, NAMESPACE,
                   command=exec_command,
                   stderr=True, stdin=True,
