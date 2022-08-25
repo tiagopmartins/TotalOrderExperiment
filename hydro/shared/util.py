@@ -144,12 +144,10 @@ def get_service_address(client, svc_name):
 # file: examples/exec.py line 101
 def copy_file_to_pod(client, file_path, pod_name, pod_path, container):
     #exec_command = ['tar', 'xmvf', '-', '-C', pod_path]
-    exec_command = ['/bin/sh', '-c', 'echo help']
     resp = stream(client.connect_get_namespaced_pod_exec, pod_name, NAMESPACE,
-                  command=exec_command,
                   stderr=True, stdin=True,
                   stdout=True, tty=False,
-                  container=container)
+                  _preload_content=False, container=container)
 
     filename = file_path.split('/')[-1]
     with TemporaryFile() as tar_buffer:
