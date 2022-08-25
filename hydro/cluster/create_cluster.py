@@ -62,8 +62,11 @@ def create_cluster(client_count, server_count, local, cfile):
         yaml.dump({'ips': x}, file)
     pods = client.list_namespaced_pod(namespace=util.NAMESPACE, label_selector='role=server').items
 
-    for pname, cname in get_current_pod_container_pairs(pods):
-        util.copy_file_to_pod(client, 'server_ips.yml', pname, 'hydro/cluster', cname)
+    #for pname, cname in get_current_pod_container_pairs(pods):
+    #    util.copy_file_to_pod(client, 'server_ips.yml', pname, 'hydro/cluster', cname)
+
+    for pod in pods:
+        util.copy_file_to_pod(client, 'server_ips.yml', pod.metadata.name, 'hydro/cluster', 'default')
 
     print('Creating %d client nodes...' % (client_count))
     batch_add_nodes(client, apps_client, cfile, ['client'], [client_count], BATCH_SIZE, prefix)
