@@ -154,6 +154,7 @@ def copy_file_to_pod(client, file_path, pod_name, pod_path, container):
                     _preload_content=False)
     except ApiException as e:
         print("Exception when calling CoreV1Api->connect_get_namespaced_pod_exec: %s\n" % e)
+        return
 
     filename = file_path.split('/')[-1]
     with TemporaryFile() as tar_buffer:
