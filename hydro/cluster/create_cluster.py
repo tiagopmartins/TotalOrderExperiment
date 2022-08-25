@@ -62,8 +62,9 @@ def create_cluster(client_count, server_count, local, cfile):
         yaml.dump({'ips': x}, file)
     pods = client.list_namespaced_pod(namespace=util.NAMESPACE, label_selector='role=server').items
 
-    if  all([p.status.phase == "Running" for p in pods]) \
-        and all([c.state.running for p in pods for c in p.status.container_statuses]):
+    # All server pods have all containers running
+    while not (all([p.status.phase == "Running" for p in pods]) \
+        and all([c.state.running for p in pods for c in p.status.container_statuses])):
             for pname, cname in get_current_pod_container_pairs(pods):
                 util.copy_file_to_pod(client, 'server_ips.yml', pname, 'hydro/cluster', cname)
 
@@ -72,8 +73,9 @@ def create_cluster(client_count, server_count, local, cfile):
     util.get_pod_ips(client, 'role=client')
     pods = client.list_namespaced_pod(namespace=util.NAMESPACE, label_selector='role=client').items
 
-    if  all([p.status.phase == "Running" for p in pods]) \
-        and all([c.state.running for p in pods for c in p.status.container_statuses]):
+    # All client pods have all containers running
+    while not (all([p.status.phase == "Running" for p in pods]) \
+        and all([c.state.running for p in pods for c in p.status.container_statuses])):
             for pname, cname in get_current_pod_container_pairs(pods):
                 util.copy_file_to_pod(client, 'server_ips.yml', pname, 'hydro/cluster', cname)
     os.system('rm server_ips.yml')
