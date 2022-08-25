@@ -63,8 +63,7 @@ def create_cluster(client_count, server_count, local, cfile):
     pods = client.list_namespaced_pod(namespace=util.NAMESPACE, label_selector='role=server').items
 
     # Wait for all server pods have all containers running
-    while not (all([p.status.phase == "Running" for p in pods]) \
-        and all([c.state.running for p in pods for c in p.status.container_statuses])):
+    while not (all([p.status.phase == "Running" for p in pods])):
             continue
     
     for pname, cname in get_current_pod_container_pairs(pods):
