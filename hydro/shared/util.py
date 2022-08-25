@@ -148,7 +148,7 @@ def copy_file_to_pod(client, file_path, pod_name, pod_path, container):
                   command=exec_command,
                   stderr=True, stdin=True,
                   stdout=True, tty=False,
-                  _preload_content=False, container=container)
+                  _preload_content=False)
 
     filename = file_path.split('/')[-1]
     with TemporaryFile() as tar_buffer:
