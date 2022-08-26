@@ -26,7 +26,7 @@ from hydro.shared import util
 BATCH_SIZE = 100
 
 
-def create_cluster(client_count, server_count, local, cfile):
+def create_cluster(client_count, server_count, local):
 
     if 'HYDRO_HOME' not in os.environ:
         raise ValueError('HYDRO_HOME environment variable must be set to be '
@@ -56,7 +56,7 @@ def create_cluster(client_count, server_count, local, cfile):
             yaml.dump(kube_config_copy, file)
 
     print('Creating %d server nodes...' % (server_count))
-    batch_add_nodes(client, apps_client, cfile, ['server'], [server_count], BATCH_SIZE, prefix)
+    batch_add_nodes(client, apps_client, ['server'], [server_count], BATCH_SIZE, prefix)
     x = util.get_pod_ips(client, 'role=server')
     with open('server_ips.yml', 'w') as file:
         yaml.dump({'ips': x}, file)
@@ -71,7 +71,7 @@ def create_cluster(client_count, server_count, local, cfile):
         util.copy_file_to_pod(client, 'server_ips.yml', pname, 'hydro/cluster', cname)
 
     print('Creating %d client nodes...' % (client_count))
-    batch_add_nodes(client, apps_client, cfile, ['client'], [client_count], BATCH_SIZE, prefix)
+    batch_add_nodes(client, apps_client, ['client'], [client_count], BATCH_SIZE, prefix)
     util.get_pod_ips(client, 'role=client')
     pods = client.list_namespaced_pod(namespace=util.NAMESPACE, label_selector='role=client').items
 
@@ -129,4 +129,4 @@ if __name__ == '__main__':
     os.system("kubectl create secret docker-registry regcred --namespace=hydro --docker-username=tiagopm --docker-password=bET!pr8bRlPHa7=iPraC")
     os.system("kubectl config set-context --current --namespace=hydro")
 
-    create_cluster(args.client[0], args.server[0], args.local, [])
+    create_cluster(args.client[0], args.server[0], args.local)

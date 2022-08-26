@@ -32,8 +32,7 @@ def get_current_pod_container_pairs(pods):
             pod_container_pairs.add((pname, cname))
     return pod_container_pairs
 
-def add_nodes(client, apps_client, cfile, kinds, counts, create=False,
-              prefix=None):
+def add_nodes(client, apps_client, kinds, counts, create=False, prefix=None):
     previously_created_pods_list = []
     expected_counts = []
     for i in range(len(kinds)):
@@ -103,30 +102,30 @@ def add_nodes(client, apps_client, cfile, kinds, counts, create=False,
 
         #os.system('rm ./anna-config.yml')
 
-def batch_add_nodes(client, apps_client, cfile, node_types, node_counts, batch_size, prefix):
+def batch_add_nodes(client, apps_client, node_types, node_counts, batch_size, prefix):
   if sum(node_counts) <= batch_size:
-    add_nodes(client, apps_client, cfile, node_types, node_counts, True,
+    add_nodes(client, apps_client, node_types, node_counts, True,
               prefix)
   else:
     for i in range(len(node_types)):
         if node_counts[i] <= batch_size:
-            batch_add_nodes(client, apps_client, cfile, [node_types[i]], [node_counts[i]], batch_size, prefix)
+            batch_add_nodes(client, apps_client, [node_types[i]], [node_counts[i]], batch_size, prefix)
         else:
             batch_count = 1
             print('Batch %d: adding %d nodes...' % (batch_count, batch_size))
-            add_nodes(client, apps_client, cfile, [node_types[i]], [batch_size], True,
+            add_nodes(client, apps_client, [node_types[i]], [batch_size], True,
                       prefix)
             remaining_count = node_counts[i] - batch_size
             batch_count += 1
             while remaining_count > 0:
               if remaining_count <= batch_size:
                 print('Batch %d: adding %d nodes...' % (batch_count, remaining_count))
-                add_nodes(client, apps_client, cfile, [node_types[i]], [remaining_count], False,
+                add_nodes(client, apps_client, [node_types[i]], [remaining_count], False,
                           prefix)
                 remaining_count = 0
               else:
                 print('Batch %d: adding %d nodes...' % (batch_count, batch_size))
-                add_nodes(client, apps_client, cfile, [node_types[i]], [batch_size], False,
+                add_nodes(client, apps_client, [node_types[i]], [batch_size], False,
                           prefix)
                 remaining_count = remaining_count - batch_size
               batch_count += 1

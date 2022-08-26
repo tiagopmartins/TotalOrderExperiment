@@ -38,9 +38,9 @@ spec:
       containers:
       - name: client-container
         image: tiagopm/to-experiment:client
-        imagePullPolicy: IfNotPresent
+        imagePullPolicy: Always
         env:
         - name: LIBC_FATAL_STDERR_
           value: "1"
-      nodeSelector:
-        type: C
+      #nodeSelector:
+      #  type: C
