@@ -15,10 +15,6 @@
 #  limitations under the License.
 #  Modifications copyright (C) 2021 Taras Lykhenko, Rafael Soares
 
-import random
-import os
-
-
 from hydro.shared import util
 
 

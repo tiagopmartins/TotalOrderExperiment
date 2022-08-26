@@ -110,7 +110,6 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    print(args.local)
     os.system("kubectl config set-context --current --namespace=default")
     os.system("kubectl delete namespaces hydro")
     os.system("kubectl create namespace hydro")
