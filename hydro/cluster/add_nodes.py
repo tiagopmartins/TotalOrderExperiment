@@ -77,6 +77,7 @@ def add_nodes(client, apps_client, kinds, counts, create=False, prefix=None):
         print("Waiting for pods to be running")
         res = []
         while len(res) != expected_counts[i]:
+            print("Waiting")
             res = util.get_pod_ips(client, 'role='+kind, is_running=True)
 
         # base code if needed to add config file
