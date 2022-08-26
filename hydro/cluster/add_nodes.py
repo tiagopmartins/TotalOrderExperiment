@@ -43,8 +43,6 @@ def add_nodes(client, apps_client, kinds, counts, create=False, prefix=None):
                                           label_selector='role=' +
                                           kinds[i]).items
 
-        print('stuck')
-
         previously_created_pods_list.append(get_current_pod_container_pairs(pods))
 
         prev_count = util.get_previous_count(client, kinds[i])
@@ -74,36 +72,9 @@ def add_nodes(client, apps_client, kinds, counts, create=False, prefix=None):
             util.scale_replica_set(apps_client, 'role='+kind, expected_counts[i])
         
         # Wait until all pods of this kind are running
-        print("Waiting for pods to be running")
         res = []
         while len(res) != expected_counts[i]:
-            print("Waiting")
             res = util.get_pod_ips(client, 'role='+kind, is_running=True)
-
-        # base code if needed to add config file
-        #pods = client.list_namespaced_pod(namespace=util.NAMESPACE,
-        #                                  label_selector='role=' +
-        #                                  kind).items
-
-        #created_pods = get_current_pod_container_pairs(pods)
-
-        #new_pods = created_pods.difference(previously_created_pods_list[i])
-
-        # Copy the KVS config into all recently created pods.
-        #os.system('cp %s ./anna-config.yml' % cfile)
-
-        #for pname, cname in new_pods:
-        #    if kind != 'function' and kind != 'gpu':
-        #        util.copy_file_to_pod(client, 'anna-config.yml', pname,
-        #                              '/hydro/anna/conf/', cname)
-        #    else:
-        #        if cname == 'cache-container':
-        #            # For the cache pods, we also copy the conf into the cache
-        #            # conf directory.
-        #            util.copy_file_to_pod(client, 'anna-config.yml', pname,
-        #                                  '/hydro/anna-cache/conf/', cname)
-
-        #os.system('rm ./anna-config.yml')
 
 def batch_add_nodes(client, apps_client, node_types, node_counts, batch_size, prefix):
   if sum(node_counts) <= batch_size:

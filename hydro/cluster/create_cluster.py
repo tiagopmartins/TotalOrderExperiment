@@ -59,11 +59,6 @@ def create_cluster(client_count, server_count, local):
     with open('server_ips.yml', 'w') as file:
         yaml.dump({'ips': x}, file)
     pods = client.list_namespaced_pod(namespace=util.NAMESPACE, label_selector='role=server').items
-
-    # Wait for all server pods have all containers running
-    #while not (all([p.status.phase == "Running" for p in pods]) \
-    #    and all([c.state.running for p in pods for c in p.status.container_statuses])):
-    #        continue
     
     for pname, cname in get_current_pod_container_pairs(pods):
         util.copy_file_to_pod(client, 'server_ips.yml', pname, 'hydro/cluster', cname)
@@ -72,11 +67,6 @@ def create_cluster(client_count, server_count, local):
     batch_add_nodes(client, apps_client, ['client'], [client_count], BATCH_SIZE, prefix)
     util.get_pod_ips(client, 'role=client')
     pods = client.list_namespaced_pod(namespace=util.NAMESPACE, label_selector='role=client').items
-
-    # Wait for all client pods have all containers running
-    #while not (all([p.status.phase == "Running" for p in pods]) \
-    #    and all([c.state.running for p in pods for c in p.status.container_statuses])):
-    #        continue
     
     for pname, cname in get_current_pod_container_pairs(pods):
         util.copy_file_to_pod(client, 'server_ips.yml', pname, 'hydro/cluster', cname)
