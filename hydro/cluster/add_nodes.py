@@ -42,8 +42,8 @@ def add_nodes(client, apps_client, kinds, counts, create=False, prefix=None):
         pods = client.list_namespaced_pod(namespace=util.NAMESPACE,
                                           label_selector='role=' +
                                           kinds[i]).items
-        print('stuck')
 
+        print('stuck')
 
         previously_created_pods_list.append(get_current_pod_container_pairs(pods))
 
@@ -72,7 +72,9 @@ def add_nodes(client, apps_client, kinds, counts, create=False, prefix=None):
                                                           body=yml)
         else:
             util.scale_replica_set(apps_client, 'role='+kind, expected_counts[i])
+        
         # Wait until all pods of this kind are running
+        print("Waiting for pods to be running")
         res = []
         while len(res) != expected_counts[i]:
             res = util.get_pod_ips(client, 'role='+kind, is_running=True)
