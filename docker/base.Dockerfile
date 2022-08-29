@@ -13,7 +13,8 @@ RUN apt-get -y install \
     autoconf \
     libtool \
     pkg-config \
-    net-tools
+    net-tools \
+    libyaml-cpp-dev
 
 ENV MY_INSTALL_DIR=$HOME/.local
 RUN mkdir -p $MY_INSTALL_DIR
