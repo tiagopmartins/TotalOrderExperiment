@@ -17,9 +17,15 @@ ServerStruct::ServerStruct(std::string host, std::string port) : _host(host), _p
 void ServerStruct::findProcesses() {
     YAML::Node addresses = YAML::LoadFile(SERVER_LIST_PATH);
 
-    if (addresses["ips"]) {
-        for (std::size_t i = 0; i < addresses["ips"].size(); i++) {
-            _servers.push_back(addresses["ips"][i].as<std::string>());
+    if (addresses["servers"]) {
+        for (std::size_t i = 0; i < addresses["servers"].size(); i++) {
+            _servers.push_back(addresses["servers"][i].as<std::string>());
+        }
+    }
+
+    if (addresses["clients"]) {
+        for (std::size_t i = 0; i < addresses["clients"].size(); i++) {
+            _clients.push_back(addresses["clients"][i].as<std::string>());
         }
     }
 }

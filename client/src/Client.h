@@ -28,6 +28,7 @@ private:
     };
 
     std::vector<std::string> _servers;
+    std::vector<std::string> _clients;
     
     std::unique_ptr<messages::Client::Stub> _stub;
     grpc::CompletionQueue _cq;                          // Producer-consumer queue for asynchronous communication
@@ -41,6 +42,10 @@ public:
 
     std::vector<std::string> servers() {
         return this->_servers;
+    }
+
+    std::vector<std::string> clients() {
+        return this->_clients;
     }
 
     /**
