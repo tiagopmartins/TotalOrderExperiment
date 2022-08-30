@@ -34,25 +34,21 @@ int main(int argc, char *argv[]) {
     std::string command;
     // User input reading
     while (true) {
-        std::cin >> command;
+        std::cin >> command >> msgN;
 
         if (command.compare("begin") == 0) {
-            std::cout << "Number of messages for the servers to exchange each: ";
-            std::cin >> msgN;
-            std::cout << std::endl;
-
             if (msgN <= 0) {
                 std::cerr << "Invalid number of messages specified.\n" << std::endl;
                 continue;
             }
 
             std::string_view beginCmd{ "begin " + std::to_string(msgN) };
-            redis->publish("", beginCmd);
+            redis->publish("to-exp", beginCmd);
             //client->begin(msgN);
         
         } else if (command.compare("fetch") == 0) {
             std::string_view fetchCmd{ "fetch" };
-            redis->publish("", fetchCmd);
+            redis->publish("to-exp", fetchCmd);
             //client->fetchLog();
         
         } else if (command.compare("exit") == 0) {

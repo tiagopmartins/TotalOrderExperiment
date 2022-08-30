@@ -1,0 +1,5 @@
+clients:
+ - localhost
+servers:
+ - localhost:50001
+ - localhost:50002
