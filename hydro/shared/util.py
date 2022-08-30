@@ -22,6 +22,7 @@ import yaml
 
 import kubernetes as k8s
 from kubernetes.stream import stream
+from kubernetes.client.rest import ApiException
 
 NAMESPACE = 'hydro'
 
@@ -144,11 +145,16 @@ def get_service_address(client, svc_name):
 # file: examples/exec.py line 101
 def copy_file_to_pod(client, file_path, pod_name, pod_path, container):
     exec_command = ['tar', 'xmvf', '-', '-C', pod_path]
-    resp = stream(client.connect_get_namespaced_pod_exec, pod_name, NAMESPACE,
-                  command=exec_command,
-                  stderr=True, stdin=True,
-                  stdout=True, tty=False,
-                  _preload_content=False, container=container)
+    try:
+        resp = stream(client.connect_get_namespaced_pod_exec, pod_name, NAMESPACE,
+                    command=exec_command,
+                    container=container,
+                    stderr=True, stdin=True,
+                    stdout=True, tty=False,
+                    _preload_content=False)
+    except ApiException as e:
+        print("Exception when calling CoreV1Api->connect_get_namespaced_pod_exec: %s\n" % e)
+        return
 
     filename = file_path.split('/')[-1]
     with TemporaryFile() as tar_buffer:

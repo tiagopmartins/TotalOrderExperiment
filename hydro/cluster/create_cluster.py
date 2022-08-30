@@ -26,15 +26,13 @@ from hydro.shared import util
 BATCH_SIZE = 100
 
 
-def create_cluster(client_count, server_count, local, cfile):
+def create_cluster(client_count, server_count, local):
 
     if 'HYDRO_HOME' not in os.environ:
         raise ValueError('HYDRO_HOME environment variable must be set to be '
                          + 'the directory where all Hydro project repos are '
                          + 'located.')
-    print(os.environ['HYDRO_HOME'])
-    prefix = os.path.join(os.environ['HYDRO_HOME'], 'hydro/cluster')
-    print(prefix)
+    prefix = os.path.join(os.environ['HYDRO_HOME'], 'cluster/hydro/cluster')
     client, apps_client = util.init_k8s()
 
     kubecfg = os.path.join(os.environ['HOME'], '.kube/config')
@@ -56,22 +54,22 @@ def create_cluster(client_count, server_count, local, cfile):
             yaml.dump(kube_config_copy, file)
 
     print('Creating %d server nodes...' % (server_count))
-    batch_add_nodes(client, apps_client, cfile, ['server'], [server_count], BATCH_SIZE, prefix)
+    batch_add_nodes(client, apps_client, ['server'], [server_count], BATCH_SIZE, prefix)
     x = util.get_pod_ips(client, 'role=server')
     with open('server_ips.yml', 'w') as file:
         yaml.dump({'ips': x}, file)
     pods = client.list_namespaced_pod(namespace=util.NAMESPACE, label_selector='role=server').items
-
+    
     for pname, cname in get_current_pod_container_pairs(pods):
-        util.copy_file_to_pod(client, 'server_ips.yml', pname, '/hydro/cluster', cname)
+        util.copy_file_to_pod(client, 'server_ips.yml', pname, 'hydro/cluster', cname)
 
     print('Creating %d client nodes...' % (client_count))
-    batch_add_nodes(client, apps_client, cfile, ['client'], [client_count], BATCH_SIZE, prefix)
+    batch_add_nodes(client, apps_client, ['client'], [client_count], BATCH_SIZE, prefix)
     util.get_pod_ips(client, 'role=client')
     pods = client.list_namespaced_pod(namespace=util.NAMESPACE, label_selector='role=client').items
-
+    
     for pname, cname in get_current_pod_container_pairs(pods):
-        util.copy_file_to_pod(client, 'server_ips.yml', pname, '/hydro/cluster', cname)
+        util.copy_file_to_pod(client, 'server_ips.yml', pname, 'hydro/cluster', cname)
     os.system('rm server_ips.yml')
 
     print('Setup complete')
@@ -112,11 +110,10 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    print(args.local)
     os.system("kubectl config set-context --current --namespace=default")
     os.system("kubectl delete namespaces hydro")
     os.system("kubectl create namespace hydro")
     os.system("kubectl create secret docker-registry regcred --namespace=hydro --docker-username=tiagopm --docker-password=bET!pr8bRlPHa7=iPraC")
     os.system("kubectl config set-context --current --namespace=hydro")
 
-    create_cluster(args.client[0], args.server[0], args.local, [])
+    create_cluster(args.client[0], args.server[0], args.local)

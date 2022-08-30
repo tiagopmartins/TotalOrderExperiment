@@ -25,13 +25,14 @@ int main(int argc, char *argv[]) {
             }
 
             client->begin(msgN);
-        }
-
-        else if (command.compare("fetch") == 0) {
+        
+        } else if (command.compare("fetch") == 0) {
             client->fetchLog();
-        }
-
-        else {
+        
+        } else if (command.compare("exit") == 0) {
+            break;
+            
+        } else {
             std::cerr << "Invalid command specified.\n" << std::endl;
         }
     }

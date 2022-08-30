@@ -1,7 +1,6 @@
 #!/bin/bash
 
 # Getting the IP of the network interface (eth0, wlan0, wlan1, ...).
-# tserver network interface: wlx7c8bc10c3f1
 PRIVATE_IP=`ifconfig eth0 | grep 'inet' | grep -v inet6 | sed -e 's/^[ \t]*//' | cut -d' ' -f2`
 PUBLIC_IP=$PRIVATE_IP
 PORT=50001

@@ -4,9 +4,10 @@
 #include <thread>
 #include <grpcpp/grpcpp.h>
 
-#include "Client.h"
-
+#include "yaml-cpp/yaml.h"
 #include "proto/client.grpc.pb.h"
+
+#include "Client.h"
 
 Client::Client() {
     findProcesses();
@@ -17,30 +18,13 @@ Client::Client(std::shared_ptr<grpc::Channel> channel) : _stub(messages::Client:
 }
 
 void Client::findProcesses() {
-    std::string type, address;
-    std::ifstream addressList(SERVER_LIST_PATH, std::ios::in);
+    YAML::Node addresses = YAML::LoadFile(SERVER_LIST_PATH);
 
-    if (addressList.is_open() && addressList.good()) {
-        while(getline(addressList, type)) {
-            getline(addressList, address);  // Get address
-            address.erase(remove_if(address.begin(), address.end(), isspace), address.end());
-
-            if (!(type.compare("server:"))) {
-                this->_servers.push_back(address);
-
-            } else if (!(type.compare("client:"))) {
-                continue;  // Discard client address
-            
-            } else {
-                std::cerr << SERVER_LIST_PATH << " with bad entry: " << type << std::endl;
-            }
+    if (addresses["ips"]) {
+        for (std::size_t i = 0; i < addresses["ips"].size(); i++) {
+            _servers.push_back(addresses["ips"][i].as<std::string>());
         }
-    
-    } else {
-        std::cerr << "Could not open the addresses' file correctly." << std::endl;
     }
-
-    addressList.close();
 }
 
 void Client::printLog(messages::LogReply *reply) {

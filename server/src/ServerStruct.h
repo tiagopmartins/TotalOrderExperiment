@@ -20,7 +20,6 @@ class ServerStruct {
 
 private:
     std::vector<std::string> _servers;
-    std::vector<std::string> _clients;
     std::string _seq;   // Sequencer
 
     std::unique_ptr<messages::Messenger::Stub> _stub;
@@ -44,10 +43,6 @@ public:
 
     std::vector<std::string> servers() {
         return this->_servers;
-    }
-
-    std::vector<std::string> clients() {
-        return this->_clients;
     }
 
     std::string seq() {
