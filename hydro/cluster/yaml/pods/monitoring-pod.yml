@@ -22,7 +22,7 @@ metadata:
 spec:
   containers:
   - name: management-container
-    image: tiagopm/to-experiment
+    image: jrafaelsoares/faastcc_anna
     env:
     - name: LIBC_FATAL_STDERR_
       value: "1"

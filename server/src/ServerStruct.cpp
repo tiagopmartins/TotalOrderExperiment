@@ -3,9 +3,10 @@
 #include <mutex>
 #include <grpcpp/grpcpp.h>
 
-#include "ServerStruct.h"
-
+#include "yaml-cpp/yaml.h"
 #include "proto/messages.grpc.pb.h"
+
+#include "ServerStruct.h"
 
 ServerStruct::ServerStruct(std::string host, std::string port) : _host(host), _port(port),
         _msgCounter(0), _seqN(0) {
@@ -14,30 +15,13 @@ ServerStruct::ServerStruct(std::string host, std::string port) : _host(host), _p
 }
 
 void ServerStruct::findProcesses() {
-    std::string type, address;
-    std::ifstream addressList(SERVER_LIST_PATH, std::ios::in);
+    YAML::Node addresses = YAML::LoadFile(SERVER_LIST_PATH);
 
-    if (addressList.is_open() && addressList.good()) {
-        while(getline(addressList, type)) {
-            getline(addressList, address);  // Get address
-            address.erase(remove_if(address.begin(), address.end(), isspace), address.end());
-
-            if (!(type.compare("server:"))) {
-                this->_servers.push_back(address);
-
-            } else if (!(type.compare("client:"))) {
-                this->_clients.push_back(address);
-            
-            } else {
-                std::cerr << SERVER_LIST_PATH << " with bad entry: " << type << std::endl;
-            }
+    if (addresses["ips"]) {
+        for (std::size_t i = 0; i < addresses["ips"].size(); i++) {
+            _servers.push_back(addresses["ips"][i].as<std::string>());
         }
-    
-    } else {
-        std::cerr << "Could not open the addresses' file correctly." << std::endl;
     }
-
-    addressList.close();
 }
 
 void ServerStruct::insertLog(std::string address, int msgID) {

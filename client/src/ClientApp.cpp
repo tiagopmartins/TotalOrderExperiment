@@ -49,15 +49,16 @@ int main(int argc, char *argv[]) {
             std::string_view beginCmd{ "begin " + std::to_string(msgN) };
             redis->publish("", beginCmd);
             //client->begin(msgN);
-        }
-
-        else if (command.compare("fetch") == 0) {
+        
+        } else if (command.compare("fetch") == 0) {
             std::string_view fetchCmd{ "fetch" };
             redis->publish("", fetchCmd);
             //client->fetchLog();
-        }
-
-        else {
+        
+        } else if (command.compare("exit") == 0) {
+            break;
+            
+        } else {
             std::cerr << "Invalid command specified.\n" << std::endl;
         }
     }

@@ -1,5 +1,8 @@
 # Dependencies
+find_package(yaml-cpp REQUIRED)
 find_package(Threads)
+
+include_directories(${YAML_CPP_INCLUDE_DIRS})
 
 # Sources
 set(SOURCES
@@ -17,4 +20,5 @@ target_link_libraries(client
         libredis++.a
         /usr/local/lib/libhiredis.a
         -pthread
+        ${YAML_CPP_LIBRARIES}
 )
