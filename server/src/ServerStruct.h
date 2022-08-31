@@ -20,7 +20,6 @@ class ServerStruct {
 
 private:
     std::vector<std::string> _servers;
-    std::vector<std::string> _clients;
     std::string _seq;   // Sequencer
 
     std::unique_ptr<messages::Messenger::Stub> _stub;
@@ -140,19 +139,6 @@ public:
      * @param msgId 
      */
     void sendSequencerNumber(std::string address, int msgId);
-
-    /**
-     * @brief Begins the message exchange between servers.
-     * 
-     * @param msgN Number of messages to exchange.
-     */
-    void begin(int msgN);
-
-    /**
-     * @brief Fetches the log to send to the client.
-     * 
-     */
-    void fetch();
 
 };
 
