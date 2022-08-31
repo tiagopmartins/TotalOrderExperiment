@@ -49,6 +49,12 @@ void printLogs(std::map<std::string, std::vector<std::string>> *logs) {
     }
 }
 
+/**
+ * @brief Waits for a subscriber to consume a message.
+ * 
+ * @param sub 
+ * @param consumed Flag to know if the output was consumed.
+ */
 void waitConsume(sw::redis::Subscriber *sub, bool *consumed) {
     do {
         try {
@@ -116,16 +122,6 @@ int main() {
             std::cerr << "Invalid command specified.\n" << std::endl;
         }
     }
-
-    do {
-        try {
-            sub.consume();
-        
-        } catch (const sw::redis::Error &err) {
-            std::cerr << "Redis error: " << err.what() << std::endl;
-        }
-
-    } while (true);
 
     delete redis;
     return 0;
