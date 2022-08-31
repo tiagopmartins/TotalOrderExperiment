@@ -57,7 +57,7 @@ def create_cluster(client_count, server_count, local):
     batch_add_nodes(client, apps_client, ['server'], [server_count], BATCH_SIZE, prefix)
     x = util.get_pod_ips(client, 'role=server')
     with open('server_ips.yml', 'w') as file:
-        yaml.dump({'servers': x}, file)
+        yaml.dump({'ips': x}, file)
     pods = client.list_namespaced_pod(namespace=util.NAMESPACE, label_selector='role=server').items
     
     for pname, cname in get_current_pod_container_pairs(pods):
@@ -65,9 +65,7 @@ def create_cluster(client_count, server_count, local):
 
     print('Creating %d client nodes...' % (client_count))
     batch_add_nodes(client, apps_client, ['client'], [client_count], BATCH_SIZE, prefix)
-    c = util.get_pod_ips(client, 'role=client')
-    with open('server_ips.yml', 'w') as file:
-        yaml.dump({'clients': x}, file)
+    util.get_pod_ips(client, 'role=client')
     pods = client.list_namespaced_pod(namespace=util.NAMESPACE, label_selector='role=client').items
     
     for pname, cname in get_current_pod_container_pairs(pods):
@@ -75,6 +73,7 @@ def create_cluster(client_count, server_count, local):
     os.system('rm server_ips.yml')
 
     print('Setup complete')
+
 
 def str2bool(v):
     if isinstance(v, bool):

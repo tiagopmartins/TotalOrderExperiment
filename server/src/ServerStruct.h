@@ -45,10 +45,6 @@ public:
         return this->_servers;
     }
 
-    std::vector<std::string> clients() {
-        return this->_clients;
-    }
-
     std::string seq() {
         return this->_seq;
     }
