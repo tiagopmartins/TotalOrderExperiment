@@ -3,6 +3,7 @@
 #include <string>
 #include <string_view>
 #include <exception>
+#include <vector>
 
 #include <sw/redis++/redis++.h>
 #include <grpcpp/grpcpp.h>
@@ -21,7 +22,8 @@ int main(int argc, char *argv[]) {
 
     try {
         sw::redis::ConnectionOptions config;
-        config.host = argv[1];
+        // TODO: use redis pod ip
+        //config.host = argv[1];
         redis = new sw::redis::Redis(config);
 
     } catch (const std::exception &e) {
@@ -30,34 +32,40 @@ int main(int argc, char *argv[]) {
 
     Client *client = new Client();
 
-    int msgN = 0;
-    std::string command;
-    // User input reading
-    while (true) {
-        std::cin >> command >> msgN;
+    // Redis subscriber
+    sw::redis::Subscriber sub = redis->subscriber();
+    sub.subscribe("to-exp");
 
-        if (command.compare("begin") == 0) {
-            if (msgN <= 0) {
-                std::cerr << "Invalid number of messages specified.\n" << std::endl;
-                continue;
-            }
+    sub.on_message([&client, &redis](std::string channel, std::string msg) {
+        std::stringstream ss(msg);
+        std::string cmd;
+        getline(ss, cmd, ' ');
 
-            std::string_view beginCmd{ "begin " + std::to_string(msgN) };
-            redis->publish("to-exp", beginCmd);
-            //client->begin(msgN);
+        if (cmd.compare("begin") == 0) {
+            std::string msgN;
+            getline(ss, msgN, ' ');
+            client->begin(atoi(msgN.c_str()));
+
+        } else if (cmd.compare("fetch") == 0) {
+            std::vector<std::string> *logs = client->fetchLog();
+            redis->rpush("logs", logs->begin(), logs->end());
+            redis->publish("to-exp", "benchmarks");
+            delete logs;
         
-        } else if (command.compare("fetch") == 0) {
-            std::string_view fetchCmd{ "fetch" };
-            redis->publish("to-exp", fetchCmd);
-            //client->fetchLog();
-        
-        } else if (command.compare("exit") == 0) {
-            break;
-            
         } else {
             std::cerr << "Invalid command specified.\n" << std::endl;
         }
-    }
+    });
+
+    do {
+        try {
+            sub.consume();
+        
+        } catch (const sw::redis::Error &err) {
+            std::cerr << "Redis error: " << err.what() << std::endl;
+        }
+
+    } while (true);
 
     delete redis;
     return 0;
