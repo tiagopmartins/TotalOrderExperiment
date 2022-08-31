@@ -10,6 +10,10 @@
 
 #include "Client.h"
 
+// Redis information
+const std::string REDIS_ADDRESS = "localhost";
+const int REDIS_PORT = 6379;
+
 const int EXPECTED_ARGS_N = 2;      // Expected number of arguments passed to the program
 
 int main(int argc, char *argv[]) {
@@ -22,8 +26,8 @@ int main(int argc, char *argv[]) {
 
     try {
         sw::redis::ConnectionOptions config;
-        // TODO: use redis pod ip
-        //config.host = argv[1];
+        config.host = REDIS_ADDRESS;
+        config.port = REDIS_PORT;
         redis = new sw::redis::Redis(config);
 
     } catch (const std::exception &e) {
@@ -41,12 +45,12 @@ int main(int argc, char *argv[]) {
         std::string cmd;
         getline(ss, cmd, ' ');
 
-        if (cmd.compare("begin") == 0) {
+        if (!cmd.compare("begin")) {
             std::string msgN;
             getline(ss, msgN, ' ');
             client->begin(atoi(msgN.c_str()));
 
-        } else if (cmd.compare("fetch") == 0) {
+        } else if (!cmd.compare("fetch")) {
             std::vector<std::string> *logs = client->fetchLog();
             redis->rpush("logs", logs->begin(), logs->end());
             redis->publish("to-exp", "benchmarks");
