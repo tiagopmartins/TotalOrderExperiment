@@ -1,7 +1,10 @@
 #!/bin/bash
 
+# you can change ~/hydro-taras to whatever you like
+export HYDRO_HOME=~/hydro-storage
+
 #cd pods
-kubectl apply --namespace=default -f redis.yml
+kubectl apply --namespace=default -f $HYDRO_HOME/cluster/hydro/cluster/yaml/pods/redis.yml
 #kubectl apply --namespace=default -f mongodb.yml
 #cd ..
 
@@ -13,8 +16,6 @@ kubectl create namespace hydro
 #kubectl create secret docker-registry regcred --namespace=hydro --docker-username= --docker-password=
 #echo "FINISHED SECRET"
 kubectl config set-context --current --namespace=hydro
-# you can change ~/hydro-taras to whatever you like
-export HYDRO_HOME=~/hydro-storage
 
 rm -rf $HYDRO_HOME
 mkdir $HYDRO_HOME
