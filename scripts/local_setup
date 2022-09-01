@@ -23,7 +23,7 @@ cd $HYDRO_HOME
 git clone https://github.com/tiagopmartins/TotalOrderExperiment cluster
 
 redis_ip=$(kubectl get nodes -o=jsonpath='{.items[0].status.addresses[0].address}')
-echo $redis_ip
+echo "-> Redis IP:" $redis_ip
 
 #cd ~/Desktop/PrompTCC/TccExperimentStorage
 #cd TccExperimentStorage

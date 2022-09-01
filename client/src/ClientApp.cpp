@@ -32,6 +32,7 @@ int main(int argc, char *argv[]) {
 
     } catch (const std::exception &e) {
         std::cout << "Error while starting up Redis: " << e.what() << std::endl;
+        return -1;
     }
 
     Client *client = new Client();
