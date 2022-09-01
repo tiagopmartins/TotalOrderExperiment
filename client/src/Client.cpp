@@ -67,7 +67,7 @@ std::vector<std::string>* Client::fetchLog() {
         grpc::Status status = _stub->log(&context, request, &reply);
 
         if (status.ok()) {
-            logs->push_back("SERVER " + reply.address());  // mark the start of a server log
+            logs->push_back("SERVER$" + reply.address());  // mark the start of a server log
             for (const std::string &msg : reply.log()) {
                 logs->push_back(msg);
             }

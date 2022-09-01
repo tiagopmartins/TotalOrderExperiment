@@ -16,21 +16,26 @@ const int REDIS_PORT = 6379;
  * 
  * @param logs Map between the server address and a vector of logs for it.
  * @param logsList List of strings containing the logs.
- *                 Form: ["SERVER address1", "log1", "log2", ..., "SERVER address2", ...]
+ *                 Form: ["SERVER$address1", "log1", "log2", ..., "SERVER$address2", ...]
  */
 void readLogs(std::map<std::string, std::vector<std::string>> *logs, std::vector<std::string> *logsList) {
+    std::string currentServer = "";
     for (auto it = logsList->begin(); it != logsList->end(); it++) {
         std::string token;
         std::stringstream ss(*it);
-        getline(ss, token, ' ');
+        getline(ss, token, '$');
+
+        std::cout << token << std::endl;
 
         if (!token.compare("SERVER")) {
             getline(ss, token, ' ');    // get new server address
+            std::cout << token << std::endl;
             logs->insert(std::pair<std::string, std::vector<std::string>>(token, std::vector<std::string>()));
+            currentServer = token;
             continue;
         }
 
-        logs->at(token).push_back(token);   // push log info
+        logs->at(currentServer).push_back(token);   // push log info
     }
 }
 
@@ -110,11 +115,11 @@ int main() {
         std::string cmd, msgN;
         std::cin >> cmd;
 
-        if (cmd.compare("begin")) {
+        if (!cmd.compare("begin")) {
             std::cin >> msgN;
             redis->publish("to-exp", "begin " + msgN);
         
-        } else if (cmd.compare("fetch")) {
+        } else if (!cmd.compare("fetch")) {
             redis->publish("to-exp", "fetch");
             waitConsume(&sub, &consumed);
 
