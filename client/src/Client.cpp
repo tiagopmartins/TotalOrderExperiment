@@ -2,6 +2,8 @@
 #include <fstream>
 #include <string>
 #include <thread>
+#include <vector>
+
 #include <grpcpp/grpcpp.h>
 
 #include "yaml-cpp/yaml.h"
@@ -25,14 +27,6 @@ void Client::findProcesses() {
             _servers.push_back(addresses["ips"][i].as<std::string>());
         }
     }
-}
-
-void Client::printLog(messages::LogReply *reply) {
-    std::cout << "-> LOG - " << reply->address() << std::endl;
-    for (const std::string &msg : reply->log()) {
-        std::cout << "\t" << msg << std::endl;
-    }
-    std::cout << std::endl;
 }
 
 void Client::sendMessage(std::string address, messages::BeginRequest *request) {
@@ -61,7 +55,8 @@ void Client::begin(int msgN) {
     }
 }
 
-void Client::fetchLog() {
+std::vector<std::string>* Client::fetchLog() {
+    std::vector<std::string> *logs = new std::vector<std::string>();
     messages::LogRequest request;
     messages::LogReply reply;
     
@@ -72,13 +67,18 @@ void Client::fetchLog() {
         grpc::Status status = _stub->log(&context, request, &reply);
 
         if (status.ok()) {
-            printLog(&reply);
+            logs->push_back("SERVER$" + reply.address());  // mark the start of a server log
+            for (const std::string &msg : reply.log()) {
+                logs->push_back(msg);
+            }
 
         } else {
             std::cerr << "-> Failed to fetch log from " << address << "\n" <<
                 "\tError " << status.error_code() << ": " << status.error_message() << '\n' << std::endl;
         }
     }
+
+    return logs;
 }
 
 void Client::AsyncCompleteRpc() {

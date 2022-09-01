@@ -19,4 +19,4 @@ echo -e "client:" >> hydro/cluster/server_ips.yml
 echo -e "    $PUBLIC_IP" >> hydro/cluster/server_ips.yml
 
 # Running the client.
-./build/client/client
+./build/client/client $PUBLIC_IP

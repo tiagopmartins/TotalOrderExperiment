@@ -1,5 +1,7 @@
 #include <iostream>
 #include <memory>
+#include <string>
+#include <sstream>
 #include <grpcpp/grpcpp.h>
 
 #include "ServerStruct.h"
@@ -33,7 +35,7 @@ void runServer(std::string host, std::string port) {
 
 int main(int argc, char *argv[]) {
     if (argc != EXPECTED_ARGS_N) {
-        std::cerr << "Invalid number of arguments. Please, specify only the host and port of the server.\n" << std::endl;
+        std::cerr << "Invalid number of arguments. Please, specify only the host and port of the server." << std::endl;
         return -1;
     }
 

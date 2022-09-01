@@ -74,6 +74,7 @@ def create_cluster(client_count, server_count, local):
 
     print('Setup complete')
 
+
 def str2bool(v):
     if isinstance(v, bool):
        return v

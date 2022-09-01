@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <memory>
+
 #include <grpcpp/grpcpp.h>
 
 #include "proto/client.grpc.pb.h"
@@ -49,8 +50,6 @@ public:
      */
     void findProcesses();
 
-    void printLog(messages::LogReply *reply);
-
     void createStub(std::string address);
 
     void sendMessage(std::string address, messages::BeginRequest *request);
@@ -63,10 +62,11 @@ public:
     void begin(int msgN);
 
     /**
-     * @brief Fetches and prints the log of messages from the servers.
+     * @brief Fetches the log of messages from the servers.
      * 
+     * @return Vector with the logs, separated by the address of the respective server.
      */
-    void fetchLog();
+    std::vector<std::string>* fetchLog();
 
     void AsyncCompleteRpc();
 
