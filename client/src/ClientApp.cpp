@@ -11,7 +11,7 @@
 #include "Client.h"
 
 // Redis information
-const std::string REDIS_ADDRESS = "localhost";
+const std::string REDIS_ADDRESS = "redis-master.default.svc.cluster.local";
 const int REDIS_PORT = 6379;
 
 const int EXPECTED_ARGS_N = 2;      // Expected number of arguments passed to the program

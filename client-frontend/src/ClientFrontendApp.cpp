@@ -6,8 +6,9 @@
 
 #include <sw/redis++/redis++.h>
 
+const int EXPECTED_ARGS_N = 1;      // Expected number of arguments passed to the program
+
 // Redis information
-const std::string REDIS_ADDRESS = "localhost";
 const int REDIS_PORT = 6379;
 
 /**
@@ -80,14 +81,19 @@ void waitConsume(sw::redis::Subscriber *sub, bool *consumed) {
  * 
  * @return int 
  */
-int main() {
+int main(int argc, char *argv[]) {
+    if (argc != EXPECTED_ARGS_N) {
+        std::cerr << "Invalid number of arguments. Please, specify the Redis address." << std::endl;
+        return -1;
+    }
+
     bool consumed = false;
     std::map<std::string, std::vector<std::string>> *logs = new std::map<std::string, std::vector<std::string>>();
     sw::redis::Redis *redis;
 
     try {
         sw::redis::ConnectionOptions config;
-        config.host = REDIS_ADDRESS;
+        config.host = argv[1];
         config.port = REDIS_PORT;
         redis = new sw::redis::Redis(config);
 
