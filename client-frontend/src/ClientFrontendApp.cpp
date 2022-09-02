@@ -101,6 +101,7 @@ int main(int argc, char *argv[]) {
         std::cout << "Error while starting up Redis: " << e.what() << std::endl;
     }
 
+    /*
     // Redis subscriber
     sw::redis::Subscriber sub = redis->subscriber();
     sub.subscribe("to-exp");
@@ -116,6 +117,7 @@ int main(int argc, char *argv[]) {
 
         consumed = true;
     });
+    */
 
     while (true) {
         std::string cmd, msgN;
