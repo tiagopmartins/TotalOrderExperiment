@@ -6,7 +6,7 @@
 
 #include <sw/redis++/redis++.h>
 
-const int EXPECTED_ARGS_N = 1;      // Expected number of arguments passed to the program
+const int EXPECTED_ARGS_N = 2;      // Expected number of arguments passed to the program
 
 // Redis information
 const int REDIS_PORT = 6379;
