@@ -19,13 +19,14 @@ const std::string SERVER_LIST_PATH = "hydro/cluster/server_ips.yml";
 class ServerStruct {
 
 private:
+    const std::string SERVER_PORT = "50001";    // Port to receive connections on
+
     std::vector<std::string> _servers;
     std::string _seq;   // Sequencer
 
     std::unique_ptr<messages::Messenger::Stub> _stub;
 
     std::string _host;
-    std::string _port;
 
     int _msgCounter;
     std::vector<std::string> _log;      // Message log
@@ -37,7 +38,7 @@ private:
     std::shared_mutex _msgCounterMutex, _logMutex;
 
 public:
-    ServerStruct(std::string host, std::string port);
+    ServerStruct(std::string host);
 
     ~ServerStruct() {}
 
@@ -54,7 +55,11 @@ public:
     }
 
     std::string port() {
-        return this->_port;
+        return SERVER_PORT;
+    }
+
+    std::string address() {
+        return this->_host + ":" + SERVER_PORT;
     }
 
     void seq(std::string seq) {
@@ -65,12 +70,7 @@ public:
         this->_host = host;
     }
 
-    void port(std::string port) {
-        this->_port = port;
-    }
-
     int msgCounter() {
-        //std::lock_guard<std::mutex> lockGuard(_msgCounterMutex);
         return this->_msgCounter;
     }
 

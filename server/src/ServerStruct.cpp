@@ -8,7 +8,7 @@
 
 #include "ServerStruct.h"
 
-ServerStruct::ServerStruct(std::string host, std::string port) : _host(host), _port(port),
+ServerStruct::ServerStruct(std::string host) : _host(host),
         _msgCounter(0), _seqN(0) {
     findProcesses();
     this->_seq = electLeader();

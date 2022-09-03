@@ -50,8 +50,8 @@ void Client::begin(int msgN) {
     std::thread (&Client::AsyncCompleteRpc, this).detach();
 
     // Broadcast begin to servers
-    for (std::string address : this->_servers) {
-        sendMessage(address, &request);
+    for (std::string ip : this->_servers) {
+        sendMessage(ip + ":" + SERVER_PORT, &request);
     }
 }
 
@@ -61,8 +61,8 @@ std::vector<std::string>* Client::fetchLog() {
     messages::LogReply reply;
     
     // Broadcast log request
-    for (std::string address : this->_servers) {
-        createStub(address);
+    for (std::string ip : this->_servers) {
+        createStub(ip + ":" + SERVER_PORT);
         grpc::ClientContext context;
         grpc::Status status = _stub->log(&context, request, &reply);
 
@@ -73,7 +73,7 @@ std::vector<std::string>* Client::fetchLog() {
             }
 
         } else {
-            std::cerr << "-> Failed to fetch log from " << address << "\n" <<
+            std::cerr << "-> Failed to fetch log from " << ip + ":" + SERVER_PORT << "\n" <<
                 "\tError " << status.error_code() << ": " << status.error_message() << '\n' << std::endl;
         }
     }

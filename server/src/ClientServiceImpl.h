@@ -44,22 +44,22 @@ public:
             messages::MessageReply msgReply;
 
             std::shared_lock<std::shared_mutex> lock(*(_server->msgCounterMutex()));
-            msgRequest.set_address(_server->host() + ":" + _server->port());
+            msgRequest.set_address(_server->address());
             msgRequest.set_id(_server->msgCounter());
 
             // Deliver the message to itself first
-            _server->insertLog(_server->host() + ":" + _server->port(), _server->msgCounter());
+            _server->insertLog(_server->address(), _server->msgCounter());
             lock.unlock();
 
             _server->incrementMsgCounter();
 
-            for (std::string address : _server->servers()) {
+            for (std::string ip : _server->servers()) {
                 // Dont send a message to itself
-                if (address == (_server->host() + ":" + _server->port())) {
+                if ((ip + _server->port()) == (_server->address())) {
                     continue;
                 }
 
-                _server->sendMessage(address, msgRequest, &msgReply);
+                _server->sendMessage(ip + _server->port(), msgRequest, &msgReply);
             }
 
             i++;
@@ -80,7 +80,7 @@ public:
         }
         lock.unlock();
 
-        reply->set_address(_server->host() + ":" + _server->port());
+        reply->set_address(_server->address());
         reply->set_code(messages::ReplyCode::OK);
         return grpc::Status::OK;
     }

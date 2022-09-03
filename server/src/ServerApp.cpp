@@ -10,7 +10,7 @@
 
 #include "proto/messages.grpc.pb.h"
 
-const int EXPECTED_ARGS_N = 3;      // Expected number of arguments passed to the program
+const int EXPECTED_ARGS_N = 2;      // Expected number of arguments passed to the program
 
 /**
  * @brief Runs the server and it's services.
@@ -18,14 +18,14 @@ const int EXPECTED_ARGS_N = 3;      // Expected number of arguments passed to th
  * @param host 
  * @param port 
  */
-void runServer(std::string host, std::string port) {
-    std::shared_ptr<ServerStruct> serverStruct(new ServerStruct(host, port));
+void runServer(std::string host) {
+    std::shared_ptr<ServerStruct> serverStruct(new ServerStruct(host));
 
     // Building the services
     ClientServiceImpl clientService = ClientServiceImpl(serverStruct);
     MessageServiceImpl messageService = MessageServiceImpl(serverStruct);
     grpc::ServerBuilder builder;
-    builder.AddListeningPort(host + ":" + port, grpc::InsecureServerCredentials());
+    builder.AddListeningPort(serverStruct->address(), grpc::InsecureServerCredentials());
     builder.RegisterService(&clientService);
     builder.RegisterService(&messageService);
     std::unique_ptr<grpc::Server> server(builder.BuildAndStart());
@@ -35,14 +35,13 @@ void runServer(std::string host, std::string port) {
 
 int main(int argc, char *argv[]) {
     if (argc != EXPECTED_ARGS_N) {
-        std::cerr << "Invalid number of arguments. Please, specify only the host and port of the server." << std::endl;
+        std::cerr << "Invalid number of arguments. Please, specify only the host of the server." << std::endl;
         return -1;
     }
 
     std::string host(argv[1]);
-    std::string port(argv[2]);
     
-    runServer(host, port);
+    runServer(host);
 
     return 0;
 }
