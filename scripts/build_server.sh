@@ -17,7 +17,7 @@ done
 
 # Tailor the config file to have process specific information.
 echo -e "server:" >> hydro/cluster/server_ips.yml
-echo -e "    $PUBLIC_IP" >> hydro/cluster/server_ips.yml
+echo -e "    $PUBLIC_IP:$PORT" >> hydro/cluster/server_ips.yml
 
 # Running the server.
 ./build/server/server $PUBLIC_IP $PORT

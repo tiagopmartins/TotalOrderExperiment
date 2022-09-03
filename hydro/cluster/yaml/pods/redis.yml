@@ -21,6 +21,7 @@ spec:
       containers:
       - name: master
         image: redis
+        imagePullPolicy: IfNotPresent
         resources:
           requests:
             cpu: 100m
@@ -37,7 +38,7 @@ metadata:
     role: master
     tier: backend
 spec:
-  type: NodePort
+  type: LoadBalancer
   ports:
   - port: 6379       # Map incoming connections on port 6379 to the target port 6379 of the Pod
     targetPort: 6379
