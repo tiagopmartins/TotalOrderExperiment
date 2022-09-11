@@ -6,6 +6,7 @@ find_package(Threads)
 set(PROTO_FILES
     proto/client.proto
     proto/messages.proto
+    proto/prober.proto
     proto/structs.proto
 )
 

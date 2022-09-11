@@ -7,6 +7,7 @@
 #include "ServerStruct.h"
 #include "ClientServiceImpl.h"
 #include "MessageServiceImpl.h"
+#include "ProberServiceImpl.h"
 
 #include "proto/messages.grpc.pb.h"
 
@@ -21,15 +22,19 @@ const int EXPECTED_ARGS_N = 2;      // Expected number of arguments passed to th
 void runServer(std::string host) {
     std::shared_ptr<ServerStruct> serverStruct(new ServerStruct(host));
 
-    // Building the services
-    ClientServiceImpl clientService = ClientServiceImpl(serverStruct);
-    MessageServiceImpl messageService = MessageServiceImpl(serverStruct);
+    // Building the server and its services
     grpc::ServerBuilder builder;
     builder.AddListeningPort(serverStruct->address(), grpc::InsecureServerCredentials());
+
+    ClientServiceImpl clientService = ClientServiceImpl(serverStruct);
+    MessageServiceImpl messageService = MessageServiceImpl(serverStruct);
+    ProberServiceImpl proberService = ProberServiceImpl();
+
     builder.RegisterService(&clientService);
     builder.RegisterService(&messageService);
-    std::unique_ptr<grpc::Server> server(builder.BuildAndStart());
+    builder.RegisterService(&proberService);
 
+    std::unique_ptr<grpc::Server> server(builder.BuildAndStart());
     server->Wait();
 }
 

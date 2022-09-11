@@ -3,12 +3,8 @@
 
 #include <mutex>
 
-#include <grpcpp/grpcpp.h>
-
-#include "proto/messages.grpc.pb.h"
-
 /**
- * @brief Interface representing a sequencer.
+ * @brief Interface defining a sequencer.
  * 
  */
 class Sequencer {

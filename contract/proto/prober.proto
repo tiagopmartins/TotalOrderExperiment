@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package messages;
+
+import "proto/structs.proto";
+
+message ProbingRequest {}
+
+message ProbingReply {
+    ReplyCode code = 1;
+}
+
+service Prober {
+    rpc probing(ProbingRequest) returns (ProbingReply) {}
+}

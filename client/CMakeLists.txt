@@ -17,8 +17,8 @@ add_executable(client ${SOURCES})
 target_link_libraries(client
     PRIVATE
         proto
-        libredis++.a
-        /usr/local/lib/libhiredis.a
+        $ENV{HOME}/.local/lib/libredis++.a
+        $ENV{HOME}/.local/lib/libhiredis.a
         -pthread
         ${YAML_CPP_LIBRARIES}
 )
