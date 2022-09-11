@@ -14,9 +14,7 @@ RUN apt-get -y install \
     libtool \
     pkg-config \
     net-tools \
-    libyaml-cpp-dev \
-    lsb-release \
-    redis
+    libyaml-cpp-dev
 
 ENV MY_INSTALL_DIR=$HOME/.local
 RUN mkdir -p $MY_INSTALL_DIR

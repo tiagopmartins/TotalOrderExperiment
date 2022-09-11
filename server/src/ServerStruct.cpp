@@ -8,8 +8,8 @@
 
 #include "ServerStruct.h"
 
-ServerStruct::ServerStruct(std::string host) : _host(host),
-        _msgCounter(0), _seqN(0) {
+ServerStruct::ServerStruct(std::string host) : Sequencer(),
+        _host(host), _msgCounter(0) {
     findProcesses();
     this->_seq = electLeader();
 }
@@ -57,9 +57,9 @@ void ServerStruct::sendSequencerNumber(std::string address, int msgId) {
     messages::SeqNumberReply seqNumReply;
 
     seqNumRequest.set_msgid(msgId);
-    std::unique_lock<std::mutex> lock(_seqNMutex);
-    seqNumRequest.set_seqn(this->_seqN);
-    this->_seqN++;
+    std::unique_lock<std::mutex> lock(*(this->seqNMutex()));
+    seqNumRequest.set_seqn(this->seqN());
+    this->incrementSeqN();
     lock.unlock();
 
     createStub(address);

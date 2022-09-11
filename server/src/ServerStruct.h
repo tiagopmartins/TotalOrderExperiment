@@ -3,39 +3,50 @@
 
 #include <string>
 #include <vector>
+#include <map>
 #include <memory>
 #include <mutex>
 #include <shared_mutex>
 #include <grpcpp/grpcpp.h>
 
+#include "Sequencer.h"
+
 #include "proto/messages.grpc.pb.h"
 
+// Path to the file containing the IPs of the servers
 const std::string SERVER_LIST_PATH = "hydro/cluster/server_ips.yml";
 
 /**
  * @brief Generic server representation.
  * 
  */
-class ServerStruct {
+class ServerStruct : public Sequencer {
 
 private:
     const std::string SERVER_PORT = "50001";    // Port to receive connections on
 
     std::vector<std::string> _servers;
-    std::string _seq;   // Sequencer
+    std::string _seq;
 
     std::unique_ptr<messages::Messenger::Stub> _stub;
 
     std::string _host;
 
+    std::shared_mutex _msgCounterMutex, _logMutex;
+
     int _msgCounter;
     std::vector<std::string> _log;      // Message log
 
-    int _seqN;  // Sequence number counter (used by the sequencer)
+    //std::map<std::pair<int, std::string>> messages; // Mapping between sequence numbers and messages
 
-    // Mutexes
-    std::mutex _seqNMutex;
-    std::shared_mutex _msgCounterMutex, _logMutex;
+    // Queues
+    //std::vector<int> rQ:        // Messages received
+    //std::vector<int> sQ;        // Sequence numbers
+    //std::vector<int> oQ;        // Messages optimally delivered
+    //std::vector<int> fQ;        // Messages finally delivered
+
+    // Delay information
+    //std::map<std::pair<std::string, int>> delays;
 
 public:
     ServerStruct(std::string host);
@@ -60,10 +71,6 @@ public:
 
     std::string address() {
         return this->_host + ":" + SERVER_PORT;
-    }
-
-    void seq(std::string seq) {
-        this->_seq = seq;
     }
 
     void host(std::string host) {
@@ -127,14 +134,7 @@ public:
     void sendMessage(std::string address, messages::MessageRequest request,
             messages::MessageReply *reply);
 
-    /**
-     * @brief Sends a sequence number to a process regarding the
-     * message specified by it's message ID.
-     * 
-     * @param address 
-     * @param msgId 
-     */
-    void sendSequencerNumber(std::string address, int msgId);
+    void sendSequencerNumber(std::string address, int msgId) override;
 
 };
 
