@@ -24,7 +24,7 @@ private:
 
     std::unique_ptr<messages::Prober::Stub> _stub;
 
-    std::map<std::string, std::vector<int>> times;   // Mapping between addresses and times
+    std::map<std::string, std::vector<int64_t>> _times;   // Mapping between addresses and times
 
     /**
      * @brief Finds all the processes alive and stores them.
@@ -41,13 +41,18 @@ public:
         return this->_servers;
     }
 
+    std::map<std::string, std::vector<int64_t>> times() {
+        return this->_times;
+    }    
+
     /**
-     * @brief Sends a probing message to the requested address.
+     * @brief Sends a probing message to the requested address. Adds the time
+     * it took for the message to get to the destination and back to the "times"
+     * map.
      * 
      * @param address 
-     * @return int Time it took for the message to get there.
      */
-    int sendProbingMessage(std::string address);
+    void sendProbingMessage(std::string address);
 
     /**
      * @brief Evaluates the stability of the network, including the time messages
