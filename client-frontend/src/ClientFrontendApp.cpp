@@ -8,8 +8,7 @@
 
 const int EXPECTED_ARGS_N = 2;      // Expected number of arguments passed to the program
 
-// Redis information
-const int REDIS_PORT = 30000;
+const int REDIS_EXTERNAL_PORT = 30000;
 
 /**
  * @brief Reads the log list containing the logs for each server divided by its
@@ -28,7 +27,6 @@ void readLogs(std::map<std::string, std::vector<std::string>> *logs, std::vector
 
         if (!token.compare("SERVER")) {
             getline(ss, token, ' ');    // get new server address
-            std::cout << token << std::endl;
             logs->insert(std::pair<std::string, std::vector<std::string>>(token, std::vector<std::string>()));
             currentServer = token;
             continue;
@@ -92,7 +90,7 @@ int main(int argc, char *argv[]) {
     try {
         sw::redis::ConnectionOptions config;
         config.host = argv[1];
-        config.port = REDIS_PORT;
+        config.port = REDIS_EXTERNAL_PORT;
         redis = new sw::redis::Redis(config);
 
     } catch (const std::exception &e) {

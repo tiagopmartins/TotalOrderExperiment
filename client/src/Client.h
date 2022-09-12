@@ -10,10 +10,6 @@
 
 #include "proto/client.grpc.pb.h"
 
-//const std::string SERVER_LIST_PATH = "hydro/cluster/server_ips.yml";
-
-const std::string SERVER_PORT = "50001";    // Port the servers receive connections on
-
 /**
  * @brief Client representation.
  * 

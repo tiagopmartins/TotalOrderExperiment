@@ -60,7 +60,7 @@ void Prober::sendProbingMessage(std::string address) {
     messages::ProbingRequest req;
     messages::ProbingReply reply;
 
-    this->createStub(address);
+    this->createStub(address + ":" + SERVER_PORT);
     grpc::ClientContext context;
 
     std::chrono::steady_clock::time_point start = std::chrono::steady_clock::now();

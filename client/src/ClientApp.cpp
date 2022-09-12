@@ -9,10 +9,7 @@
 #include <grpcpp/grpcpp.h>
 
 #include "Client.h"
-
-// Redis information
-const std::string REDIS_ADDRESS = "redis-master.default.svc.cluster.local";
-const int REDIS_PORT = 6379;
+#include "Constants.h"
 
 const int EXPECTED_ARGS_N = 2;      // Expected number of arguments passed to the program
 
@@ -27,7 +24,7 @@ int main(int argc, char *argv[]) {
     try {
         sw::redis::ConnectionOptions config;
         config.host = REDIS_ADDRESS;
-        config.port = REDIS_PORT;
+        config.port = REDIS_INTERNAL_PORT;
         redis = new sw::redis::Redis(config);
 
     } catch (const std::exception &e) {
@@ -63,7 +60,10 @@ int main(int argc, char *argv[]) {
             redis->publish("to-exp", "probing");
             delete results;
         
-        }*/ else {
+        }*/ else if (!cmd.compare("exit")) {
+            std::cout << "Frontend exited" << std::endl;
+        
+        } else {
             std::cerr << "Invalid command specified.\n" << std::endl;
         }
     });

@@ -16,6 +16,9 @@
 // Path to the file containing the IPs of the servers
 const std::string SERVER_LIST_PATH = "hydro/cluster/server_ips.yml";
 
+// Port the servers receive connections on
+const std::string SERVER_PORT = "50001";
+
 /**
  * @brief Generic server representation.
  * 
@@ -23,8 +26,6 @@ const std::string SERVER_LIST_PATH = "hydro/cluster/server_ips.yml";
 class ServerStruct : public Sequencer {
 
 private:
-    const std::string SERVER_PORT = "50001";    // Port to receive connections on
-
     std::vector<std::string> _servers;
     std::string _seq;
 
