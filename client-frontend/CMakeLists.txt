@@ -13,7 +13,7 @@ add_executable(client-frontend ${SOURCES})
 target_link_libraries(client-frontend
     PRIVATE
         proto
-        $ENV{HOME}/.local/lib/libredis++.a
-        $ENV{HOME}/.local/lib/libhiredis.a
+        libredis++.a
+        /usr/local/lib/libhiredis.a
 	    -pthread
 )
