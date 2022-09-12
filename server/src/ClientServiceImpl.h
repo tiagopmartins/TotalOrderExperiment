@@ -41,7 +41,6 @@ public:
         std::chrono::steady_clock::time_point start = std::chrono::steady_clock::now();
         // Sending messages to the other servers
         while (std::chrono::duration_cast<std::chrono::seconds>(std::chrono::steady_clock::now() - start).count() < request->duration()) {
-            std::cout << std::chrono::duration_cast<std::chrono::seconds>(std::chrono::steady_clock::now() - start).count() << std::endl;
             messages::MessageRequest msgRequest;
             messages::MessageReply msgReply;
 
@@ -57,11 +56,11 @@ public:
 
             for (std::string ip : _server->servers()) {
                 // Dont send a message to itself
-                if ((ip + _server->port()) == (_server->address())) {
+                if ((ip + ":" + _server->port()) == (_server->address())) {
                     continue;
                 }
 
-                _server->sendMessage(ip + _server->port(), msgRequest, &msgReply);
+                _server->sendMessage(ip + ":" + _server->port(), msgRequest, &msgReply);
             }
         }
 
