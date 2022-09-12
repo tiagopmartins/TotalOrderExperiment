@@ -3,13 +3,14 @@
 
 #include <string>
 #include <vector>
+#include <map>
 #include <memory>
 
 #include <grpcpp/grpcpp.h>
 
 #include "proto/client.grpc.pb.h"
 
-const std::string SERVER_LIST_PATH = "hydro/cluster/server_ips.yml";
+//const std::string SERVER_LIST_PATH = "hydro/cluster/server_ips.yml";
 
 const std::string SERVER_PORT = "50001";    // Port the servers receive connections on
 
@@ -69,6 +70,13 @@ public:
      * @return Vector with the logs, separated by the address of the respective server.
      */
     std::vector<std::string>* fetchLog();
+
+    /**
+     * @brief Starts probing the network to check it's stabilty.
+     * 
+     * @return Vector with the times
+     */
+    //std::map<std::string, std::vector<int>> probe();
 
     void AsyncCompleteRpc();
 

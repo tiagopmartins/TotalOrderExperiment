@@ -24,7 +24,7 @@ private:
 
     std::unique_ptr<messages::Prober::Stub> _stub;
 
-    std::map<std::string, std::vector<int64_t>> _times;   // Mapping between addresses and times
+    std::map<std::string, std::vector<int64_t>>* _times;   // Mapping between addresses and times
 
     /**
      * @brief Finds all the processes alive and stores them.
@@ -34,6 +34,12 @@ private:
 
     void createStub(std::string address);
 
+    // Statistical methods
+
+    int64_t averageValue(std::string address);
+
+    int64_t stdDeviation(std::string address);
+
 public:
     Prober();
 
@@ -41,7 +47,7 @@ public:
         return this->_servers;
     }
 
-    std::map<std::string, std::vector<int64_t>> times() {
+    std::map<std::string, std::vector<int64_t>>* times() {
         return this->_times;
     }    
 
@@ -59,7 +65,7 @@ public:
      * take to arrive. Sends the results to the Redis database.
      * 
      */
-    void stability();
+    std::map<std::string, std::vector<int64_t>>* stability();
 
 };
 

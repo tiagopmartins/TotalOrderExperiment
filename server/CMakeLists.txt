@@ -8,7 +8,6 @@ include_directories(${YAML_CPP_INCLUDE_DIRS})
 set(SOURCES
     src/ServerApp.cpp
     src/ServerStruct.cpp
-    src/Prober.cpp
 )
 
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${SOURCES})

@@ -10,9 +10,12 @@
 #include "proto/client.grpc.pb.h"
 
 #include "Client.h"
+#include "Prober.h"
 
 Client::Client() {
     findProcesses();
+    Prober prober = Prober();
+    prober.stability();
 }
 
 Client::Client(std::shared_ptr<grpc::Channel> channel) : _stub(messages::Client::NewStub(channel)) {
@@ -80,6 +83,15 @@ std::vector<std::string>* Client::fetchLog() {
 
     return logs;
 }
+
+/*
+std::map<std::string, std::vector<int>>* Client::probe() {
+    Prober prober = Prober();
+    std::map<std::string, std::vector<int>> *times = prober.stability();
+
+    // Create vector with the info
+}
+*/
 
 void Client::AsyncCompleteRpc() {
     void *gotTag;

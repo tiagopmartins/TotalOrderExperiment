@@ -57,7 +57,13 @@ int main(int argc, char *argv[]) {
             redis->publish("to-exp", "benchmarks");
             delete logs;
         
-        } else {
+        } /*else if (!cmd.compare("probe")) {
+            std::map<std::string, std::vector<std::string>> *results = client->probe();
+            redis->rpush("probeRes", results->begin(), results->end());
+            redis->publish("to-exp", "probing");
+            delete results;
+        
+        }*/ else {
             std::cerr << "Invalid command specified.\n" << std::endl;
         }
     });

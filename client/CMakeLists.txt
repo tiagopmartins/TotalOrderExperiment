@@ -8,6 +8,7 @@ include_directories(${YAML_CPP_INCLUDE_DIRS})
 set(SOURCES
     src/ClientApp.cpp
     src/Client.cpp
+    src/Prober.cpp
 )
 
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${SOURCES})
