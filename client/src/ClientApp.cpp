@@ -44,9 +44,9 @@ int main(int argc, char *argv[]) {
         getline(ss, cmd, ' ');
 
         if (!cmd.compare("begin")) {
-            std::string msgN;
-            getline(ss, msgN, ' ');
-            client->begin(atoi(msgN.c_str()));
+            std::string duration;
+            getline(ss, duration, ' ');
+            client->begin(atoi(duration.c_str()));
 
         } else if (!cmd.compare("fetch")) {
             std::vector<std::string> *logs = client->fetchLog();

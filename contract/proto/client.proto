@@ -6,8 +6,8 @@ import "proto/structs.proto";
 
 // Request for servers to start messaging
 message BeginRequest {
-    // Number of messages to send (if -1 is specified, there is no limit of messages)
-    uint32 msgN = 1;
+    // Duration (seconds) the servers will exchange messages for
+    uint32 duration = 1;
 }
 
 message BeginReply {

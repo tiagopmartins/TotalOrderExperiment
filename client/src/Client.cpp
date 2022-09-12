@@ -45,9 +45,9 @@ void Client::createStub(std::string address) {
     _stub = messages::Client::NewStub(grpc::CreateChannel(address, grpc::InsecureChannelCredentials()));
 }
 
-void Client::begin(int msgN) {
+void Client::begin(int duration) {
     messages::BeginRequest request;
-    request.set_msgn(msgN);
+    request.set_duration(duration);
 
     // Thread to wait for replies
     std::thread (&Client::AsyncCompleteRpc, this).detach();

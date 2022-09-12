@@ -114,12 +114,12 @@ int main(int argc, char *argv[]) {
     });
 
     while (true) {
-        std::string cmd, msgN;
+        std::string cmd, duration;
         std::cin >> cmd;
 
         if (!cmd.compare("begin")) {
-            std::cin >> msgN;
-            redis->publish("to-exp", "begin " + msgN);
+            std::cin >> duration;
+            redis->publish("to-exp", "begin " + duration);
         
         } else if (!cmd.compare("fetch")) {
             redis->publish("to-exp", "fetch");

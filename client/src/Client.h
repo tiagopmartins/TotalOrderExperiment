@@ -56,9 +56,9 @@ public:
     /**
      * @brief Begin the message exchange between servers.
      * 
-     * @param msgN Number of messages the servers are going to exchange each.
+     * @param duration Duration (seconds) the servers are going to exchange messages for.
      */
-    void begin(int msgN);
+    void begin(int duration);
 
     /**
      * @brief Fetches the log of messages from the servers.

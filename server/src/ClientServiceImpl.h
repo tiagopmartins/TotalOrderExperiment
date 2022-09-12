@@ -1,6 +1,7 @@
 #ifndef CLIENT_SERVICE_IMPL_H
 #define CLIENT_SERVICE_IMPL_H
 
+#include <chrono>
 #include <memory>
 #include <mutex>
 #include <grpcpp/grpcpp.h>
@@ -37,9 +38,10 @@ public:
             messages::BeginReply *reply) override {
         std::cout << "-> Received begin signal\n" << std::endl;
 
-        int i = 0;
+        std::chrono::steady_clock::time_point start = std::chrono::steady_clock::now();
         // Sending messages to the other servers
-        while (i < request->msgn()) {
+        while (std::chrono::duration_cast<std::chrono::seconds>(std::chrono::steady_clock::now() - start).count() < request->duration()) {
+            std::cout << std::chrono::duration_cast<std::chrono::seconds>(std::chrono::steady_clock::now() - start).count() << std::endl;
             messages::MessageRequest msgRequest;
             messages::MessageReply msgReply;
 
@@ -61,8 +63,6 @@ public:
 
                 _server->sendMessage(ip + _server->port(), msgRequest, &msgReply);
             }
-
-            i++;
         }
 
         reply->set_code(messages::ReplyCode::OK);
