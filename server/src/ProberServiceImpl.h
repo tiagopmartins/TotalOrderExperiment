@@ -1,7 +1,7 @@
 #ifndef PROBER_SERVICE_IMPL_H
 #define PROBER_SERVICE_IMPL_H
 
-#include <ctime>
+#include <chrono>
 #include <grpcpp/grpcpp.h>
 
 #include "proto/prober.grpc.pb.h"
@@ -29,8 +29,10 @@ public:
             messages::ProbingReply *reply) override {
         std::cout << "-> Received probing request" << std::endl;
 
-        std::time_t currentTime = std::time(nullptr) * 1000;
-        reply->set_currenttime(currentTime);
+        std::chrono::time_point now = std::chrono::system_clock::now();
+        std::chrono::time_point nowMS = std::chrono::time_point_cast<std::chrono::milliseconds>(now);
+        auto currentTime = std::chrono::duration_cast<std::chrono::milliseconds>(nowMS.time_since_epoch());
+        reply->set_arrival(currentTime.count());
 
         reply->set_code(messages::ReplyCode::OK);
         return grpc::Status::OK;
