@@ -66,6 +66,9 @@ void Prober::sendProbingMessage(std::string address) {
     grpc::Status status = _stub->probing(&context, req, &reply);
     std::time_t now = std::time(nullptr) * 1000;
 
+    std::cout << "Time sent: " << reply.currenttime() << std::endl;
+    std::cout << "Time now: " << now << std::endl;
+
     _times->at(address).push_back(now - reply.currenttime());
 
     if (status.ok()) {
