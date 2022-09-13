@@ -1,4 +1,4 @@
-#include <chrono>
+#include <ctime>
 #include <cmath>
 #include <iostream>
 #include <fstream>
@@ -63,11 +63,10 @@ void Prober::sendProbingMessage(std::string address) {
     this->createStub(address + ":" + SERVER_PORT);
     grpc::ClientContext context;
 
-    std::chrono::steady_clock::time_point start = std::chrono::steady_clock::now();
     grpc::Status status = _stub->probing(&context, req, &reply);
-    std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+    std::time_t now = std::time(nullptr);
 
-    _times->at(address).push_back(std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count());
+    _times->at(address).push_back(now - reply.currenttime());
 
     if (status.ok()) {
         std::cout << "-> Successfully sent probing message to " + address << '\n' << std::endl;
