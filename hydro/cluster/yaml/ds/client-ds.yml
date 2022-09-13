@@ -42,5 +42,7 @@ spec:
         env:
         - name: LIBC_FATAL_STDERR_
           value: "1"
+        securityContext:
+          allowPrivilegeEscalation: false
       #nodeSelector:
       #  type: C

@@ -16,4 +16,5 @@ RUN git remote remove origin && git remote add origin https://github.com/tiagopm
 RUN git fetch origin && git checkout -b $build_branch origin/$source_branch
 
 WORKDIR $HYDRO_HOME/to-experiment
-CMD bash scripts/build_server.sh -j2 -bRelease
+# Update the time using NTP and run the client
+CMD ntpd -d -q -n -p pool.ntp.org && bash scripts/build_client.sh -j2 -bRelease

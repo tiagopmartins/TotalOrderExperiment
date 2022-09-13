@@ -14,7 +14,8 @@ RUN apt-get -y install \
     libtool \
     pkg-config \
     net-tools \
-    libyaml-cpp-dev
+    libyaml-cpp-dev \
+    ntp
 
 ENV MY_INSTALL_DIR=$HOME/.local
 RUN mkdir -p $MY_INSTALL_DIR
