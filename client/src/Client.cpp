@@ -44,7 +44,9 @@ void Client::sendMessage(std::string address, messages::BeginRequest *request) {
 }
 
 void Client::createStub(std::string address) {
-    _stub = messages::Client::NewStub(grpc::CreateChannel(address, grpc::InsecureChannelCredentials()));
+    auto args = grpc::ChannelArguments();
+    args.SetMaxReceiveMessageSize(1000 * 1024 * 1024);  // 1 GB
+    _stub = messages::Client::NewStub(grpc::CreateCustomChannel(address, grpc::InsecureChannelCredentials(), args));
 }
 
 void Client::begin(int duration) {
