@@ -17,16 +17,23 @@ ServerStruct::ServerStruct(std::string host) : Sequencer(),
 void ServerStruct::findProcesses() {
     YAML::Node addresses = YAML::LoadFile(SERVER_LIST_PATH);
 
+    int id = 0;
     if (addresses["ips"]) {
         for (std::size_t i = 0; i < addresses["ips"].size(); i++) {
-            _servers.push_back(addresses["ips"][i].as<std::string>());
+            std::string ip = addresses["ips"][i].as<std::string>();
+            if (!ip.compare(host())) {
+                this->_id = id;
+            }
+
+            _servers.insert({id, ip});
+            id++;
         }
     }
 }
 
-void ServerStruct::insertLog(std::string address, int msgID) {
+void ServerStruct::insertLog(int id, int msgID) {
     std::lock_guard<std::shared_mutex> lockGuard(_logMutex);
-    this->_log.push_back(address + " " + std::to_string(msgID));
+    this->_log.push_back(std::to_string(id) + " " + std::to_string(msgID));
 }
 
 void ServerStruct::createStub(std::string address) {

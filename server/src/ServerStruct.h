@@ -26,8 +26,10 @@ const std::string SERVER_PORT = "50001";
 class ServerStruct : public Sequencer {
 
 private:
-    std::vector<std::string> _servers;
+    std::map<int, std::string> _servers;
     std::string _seq;
+
+    int _id;
 
     std::unique_ptr<messages::Messenger::Stub> _stub;
 
@@ -54,12 +56,16 @@ public:
 
     ~ServerStruct() {}
 
-    std::vector<std::string> servers() {
+    std::map<int, std::string> servers() {
         return this->_servers;
     }
 
     std::string seq() {
         return this->_seq;
+    }
+
+    int id() {
+        return this->_id;
     }
 
     std::string host() {
@@ -108,10 +114,10 @@ public:
     /**
      * @brief Adds to the log the register with the specified format.
      * 
-     * @param address Address of the sending server.
+     * @param id ID of the server.
      * @param msgID ID of the message from the server.
      */
-    void insertLog(std::string address, int msgID);
+    void insertLog(int id, int msgID);
 
     void createStub(std::string address);
 

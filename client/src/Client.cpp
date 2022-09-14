@@ -25,9 +25,11 @@ Client::Client(std::shared_ptr<grpc::Channel> channel) : _stub(messages::Client:
 void Client::findProcesses() {
     YAML::Node addresses = YAML::LoadFile(SERVER_LIST_PATH);
 
+    int id = 0;
     if (addresses["ips"]) {
         for (std::size_t i = 0; i < addresses["ips"].size(); i++) {
-            _servers.push_back(addresses["ips"][i].as<std::string>());
+            _servers.insert({id, addresses["ips"][i].as<std::string>()});
+            id++;
         }
     }
 }
@@ -53,7 +55,7 @@ void Client::begin(int duration) {
     std::thread (&Client::AsyncCompleteRpc, this).detach();
 
     // Broadcast begin to servers
-    for (std::string ip : this->_servers) {
+    for (auto const &[id, ip] : this->_servers) {
         sendMessage(ip + ":" + SERVER_PORT, &request);
     }
 }
@@ -64,7 +66,7 @@ std::vector<std::string>* Client::fetchLog() {
     messages::LogReply reply;
     
     // Broadcast log request
-    for (std::string ip : this->_servers) {
+    for (auto const &[id, ip] : this->_servers) {
         createStub(ip + ":" + SERVER_PORT);
         grpc::ClientContext context;
         grpc::Status status = _stub->log(&context, request, &reply);

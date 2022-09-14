@@ -7,6 +7,7 @@ import "proto/structs.proto";
 message MessageRequest {
     string address = 1;
     uint32 id = 2;
+    uint32 msgId = 3;
 }
 
 message MessageReply {

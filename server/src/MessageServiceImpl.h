@@ -37,7 +37,7 @@ public:
         std::cout << "-> Receiving message from " << request->address()
             << " with message ID " << request->id() << '\n' << std::endl;
 
-        _server->insertLog(request->address(), request->id());
+        _server->insertLog(request->id(), request->msgid());
 
         reply->set_code(messages::ReplyCode::OK);
         return grpc::Status::OK;

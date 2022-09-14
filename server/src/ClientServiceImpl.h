@@ -45,16 +45,16 @@ public:
             messages::MessageReply msgReply;
 
             std::shared_lock<std::shared_mutex> lock(*(_server->msgCounterMutex()));
-            msgRequest.set_address(_server->address());
-            msgRequest.set_id(_server->msgCounter());
+            msgRequest.set_id(_server->id());
+            msgRequest.set_msgid(_server->msgCounter());
 
             // Deliver the message to itself first
-            _server->insertLog(_server->address(), _server->msgCounter());
+            _server->insertLog(_server->id(), _server->msgCounter());
             lock.unlock();
 
             _server->incrementMsgCounter();
 
-            for (std::string ip : _server->servers()) {
+            for (auto const &[id, ip] : _server->servers()) {
                 // Dont send a message to itself
                 if ((ip + ":" + _server->port()) == (_server->address())) {
                     continue;

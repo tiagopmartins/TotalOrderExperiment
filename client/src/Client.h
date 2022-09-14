@@ -27,7 +27,7 @@ private:
         std::unique_ptr<grpc::ClientAsyncResponseReader<messages::BeginReply>> responseReader;
     };
 
-    std::vector<std::string> _servers;
+    std::map<int, std::string> _servers;
     
     std::unique_ptr<messages::Client::Stub> _stub;
     grpc::CompletionQueue _cq;                          // Producer-consumer queue for asynchronous communication
@@ -39,7 +39,7 @@ public:
 
     ~Client() {}
 
-    std::vector<std::string> servers() {
+    std::map<int, std::string> servers() {
         return this->_servers;
     }
 
