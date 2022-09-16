@@ -21,7 +21,7 @@ private:
 
     std::unique_ptr<messages::Prober::Stub> _stub;
 
-    std::map<std::string, std::vector<int64_t>>* _times;   // Mapping between addresses and times
+    std::map<std::string, std::vector<std::vector<int64_t>>>* _times;   // Mapping between addresses and times (per second)
 
     /**
      * @brief Finds all the processes alive and stores them.
@@ -33,9 +33,9 @@ private:
 
     // Statistical methods
 
-    int64_t averageValue(std::string address);
+    std::vector<int64_t>* averageValue(std::string address);
 
-    int64_t stdDeviation(std::string address);
+    std::vector<int64_t>* stdDeviation(std::string address);
 
 public:
     Prober();
@@ -44,25 +44,27 @@ public:
         return this->_servers;
     }
 
-    std::map<std::string, std::vector<int64_t>>* times() {
+    std::map<std::string, std::vector<std::vector<int64_t>>>* times() {
         return this->_times;
     }    
 
     /**
-     * @brief Sends a probing message to the requested address. Adds the time
-     * it took for the message to get to the destination and back to the "times"
-     * map.
+     * @brief Sends a probing message to the requested address.
      * 
-     * @param address 
+     * @param address
+     * @return Time it took for the message to arrive at the specified address.
      */
-    void sendProbingMessage(std::string address);
+    int64_t sendProbingMessage(std::string address);
 
     /**
      * @brief Evaluates the stability of the network, including the time messages
      * take to arrive. Sends the results to the Redis database.
-     * 
+     *
+     * @duration Duration of the probing.
+     * @return Mapping between server addresses and a vector divided into sections
+     * (vectors) containing the values of the probing during each second.
      */
-    std::map<std::string, std::vector<int64_t>>* stability();
+    std::map<std::string, std::vector<std::vector<int64_t>>>* stability(int duration);
 
 };
 

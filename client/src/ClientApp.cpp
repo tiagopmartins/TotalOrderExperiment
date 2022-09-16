@@ -54,13 +54,15 @@ int main(int argc, char *argv[]) {
             redis->publish("to-exp", "benchmarks");
             delete logs;
         
-        } /*else if (!cmd.compare("probe")) {
-            std::map<std::string, std::vector<std::string>> *results = client->probe();
-            redis->rpush("probeRes", results->begin(), results->end());
+        } else if (!cmd.compare("probe")) {
+            std::string duration;
+            getline(ss, duration, ' ');
+            std::vector<std::string> *probing = client->probe(std::atoi(duration.c_str()));
+            redis->rpush("probe", probing->begin(), probing->end());
             redis->publish("to-exp", "probing");
-            delete results;
+            delete probing;
         
-        }*/ else if (!cmd.compare("exit")) {
+        } else if (!cmd.compare("exit")) {
             std::cout << "Frontend exited" << std::endl;
         
         } else {

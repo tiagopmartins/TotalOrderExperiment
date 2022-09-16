@@ -69,10 +69,11 @@ public:
 
     /**
      * @brief Starts probing the network to check it's stabilty.
-     * 
+     *
+     * @param duration Duration of the probing.
      * @return Vector with the times
      */
-    //std::map<std::string, std::vector<int>> probe();
+    std::vector<std::string>* probe(int duration);
 
     void AsyncCompleteRpc();
 

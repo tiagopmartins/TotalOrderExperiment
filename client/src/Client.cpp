@@ -14,8 +14,6 @@
 
 Client::Client() {
     findProcesses();
-    Prober prober = Prober();
-    prober.stability();
 }
 
 Client::Client(std::shared_ptr<grpc::Channel> channel) : _stub(messages::Client::NewStub(channel)) {
@@ -88,14 +86,25 @@ std::vector<std::string>* Client::fetchLog() {
     return logs;
 }
 
-/*
-std::map<std::string, std::vector<int>>* Client::probe() {
+std::vector<std::string>* Client::probe(int duration) {
     Prober prober = Prober();
-    std::map<std::string, std::vector<int>> *times = prober.stability();
+    std::map<std::string, std::vector<std::vector<int64_t>>> *times = prober.stability(duration);
 
-    // Create vector with the info
+    std::vector<std::string> *probing = new std::vector<std::string>();
+    for (auto const &[address, perSecondValues] : *times) {
+        probing->push_back("SERVER$" + address);
+        int s = 1;
+        for (std::vector<int64_t> const &second : perSecondValues) {
+            probing->push_back("SECOND$" + std::to_string(s));
+            for (int64_t const &value : second) {
+                probing->push_back(std::to_string(value));
+            }
+            s++;
+        }
+    }
+
+    return probing;
 }
-*/
 
 void Client::AsyncCompleteRpc() {
     void *gotTag;
