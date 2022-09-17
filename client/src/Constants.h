@@ -9,6 +9,7 @@ const std::string SERVER_PORT = "50001";
 
 // Redis information
 const std::string REDIS_ADDRESS = "redis-master.default.svc.cluster.local";
+//const std::string REDIS_ADDRESS = "localhost";
 const int REDIS_INTERNAL_PORT = 6379;
 
 #endif

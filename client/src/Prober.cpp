@@ -91,14 +91,15 @@ int64_t Prober::sendProbingMessage(std::string address) {
 }
 
 std::map<std::string, std::vector<std::vector<int64_t>>>* Prober::stability(int duration) {
-    int seconds = 0;
+    int seconds = 0, res = 0;
     while (seconds < duration) {
+        _times->at(_servers[0]).push_back(std::vector<int64_t>());
         // Probing for one second at a time
         std::chrono::steady_clock::time_point startSecond = std::chrono::steady_clock::now();
         while (std::chrono::duration_cast<std::chrono::seconds>(std::chrono::steady_clock::now() - startSecond).count() < 1) {
             // TODO: turn this into an async method that sends to every server
-            sendProbingMessage(_servers[0]);
-            _times->at(_servers[0])[seconds].push_back(duration);
+            res = sendProbingMessage(_servers[0]);
+            _times->at(_servers[0])[seconds].push_back(res);
         }
 
         seconds++;

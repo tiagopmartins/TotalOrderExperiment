@@ -15,7 +15,7 @@ const int EXPECTED_ARGS_N = 2;      // Expected number of arguments passed to th
 
 int main(int argc, char *argv[]) {
     if (argc != EXPECTED_ARGS_N) {
-        std::cerr << "Invalid number of arguments. Please, specify only the host of the server." << std::endl;
+        std::cerr << "Invalid number of arguments. Please, specify only the host of the client." << std::endl;
         return -1;
     }
 

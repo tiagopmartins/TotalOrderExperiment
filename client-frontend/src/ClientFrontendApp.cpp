@@ -9,6 +9,7 @@
 const int EXPECTED_ARGS_N = 2;      // Expected number of arguments passed to the program
 
 const int REDIS_EXTERNAL_PORT = 30000;
+//const int REDIS_EXTERNAL_PORT = 6379;
 
 // ------- DATA LOGS
 
@@ -103,10 +104,10 @@ void printProbing(std::map<std::string, std::vector<std::vector<std::string>>> *
         for (std::vector<std::string> const &values : vector) {
             std::cout << "\t(" << second << "s)\n";
             for (std::string const &value : values) {
-                std::cout << "\t- " << value << "s\n";
+                std::cout << "\t- " << value << "ms\n";
             }
+            second++;
         }
-        second++;
         std::cout << std::endl;
     }
 }
@@ -194,7 +195,7 @@ int main(int argc, char *argv[]) {
             redis->publish("to-exp", "fetch");
             waitConsume(&sub, &consumed);
 
-        } else if (!cmd.compare("probe ")) {
+        } else if (!cmd.compare("probe")) {
             std::cin >> duration;
             redis->publish("to-exp", "probe " + duration);
             waitConsume(&sub, &consumed);
