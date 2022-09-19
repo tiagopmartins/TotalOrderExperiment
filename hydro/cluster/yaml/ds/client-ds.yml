@@ -44,5 +44,7 @@ spec:
           value: "1"
         securityContext:
           allowPrivilegeEscalation: false
+        cap_add:
+          - NET_ADMIN
       #nodeSelector:
       #  type: C
