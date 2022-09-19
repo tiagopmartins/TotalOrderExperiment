@@ -43,8 +43,10 @@ spec:
         - name: LIBC_FATAL_STDERR_
           value: "1"
         securityContext:
-          allowPrivilegeEscalation: false
-        cap_add:
-          - NET_ADMIN
+          privilege: true
+        #securityContext:
+        #  allowPrivilegeEscalation: false
+        #cap_add:
+        #  - NET_ADMIN
       #nodeSelector:
       #  type: S
