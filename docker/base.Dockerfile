@@ -15,7 +15,8 @@ RUN apt-get -y install \
     pkg-config \
     net-tools \
     libyaml-cpp-dev \
-    ntp
+    ntp \
+    iproute2
 
 ENV MY_INSTALL_DIR=$HOME/.local
 RUN mkdir -p $MY_INSTALL_DIR
