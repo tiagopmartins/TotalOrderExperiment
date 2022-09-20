@@ -42,7 +42,5 @@ spec:
           env:
             - name: LIBC_FATAL_STDERR_
               value: "1"
-          #securityContext:
-          #  privileged: true
-          capabilities:
-            add: ["SYS_TIME", "DAC_OVERRIDE", "NET_ADMIN"]
+          securityContext:
+            privileged: true
