@@ -45,4 +45,4 @@ spec:
           #securityContext:
           #  privileged: true
           capabilities:
-            add: ["SYS_TIME", "NET_ADMIN"]
+            add: ["SYS_TIME", "DAC_OVERRIDE", "NET_ADMIN"]
