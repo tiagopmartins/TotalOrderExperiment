@@ -16,7 +16,8 @@ RUN git remote remove origin && git remote add origin https://github.com/tiagopm
 RUN git fetch origin && git checkout -b $build_branch origin/$source_branch
 
 WORKDIR $HYDRO_HOME/to-experiment
-# Update the time using NTP, add message delays of 100ms (+- 10ms) and run the server
+# Update the time using NTP and run the server
 CMD ntpd -d -q -n -p pool.ntp.org && \
-    tc qdisc add dev eth0 root netem delay 100ms 10ms && \
     bash scripts/build_server.sh -j2 -bRelease
+
+#tc qdisc add dev eth0 root netem delay 100ms 10ms

@@ -17,7 +17,7 @@ apiVersion: apps/v1
 kind: ReplicaSet
 metadata:
   name: client-nodes
-  labels: 
+  labels:
     role: client
 spec:
   selector:
@@ -36,13 +36,13 @@ spec:
             matchLabels:
               role: client
       containers:
-      - name: client-container
-        image: tiagopm/to-experiment:client
-        imagePullPolicy: Always
-        env:
-        - name: LIBC_FATAL_STDERR_
-          value: "1"
-        securityContext:
-          capabilities:
-            add:
-              - NET_ADMIN
+        - name: client-container
+          image: tiagopm/to-experiment:client
+          imagePullPolicy: Always
+          env:
+            - name: LIBC_FATAL_STDERR_
+              value: "1"
+          securityContext:
+            privileged: true
+          #capabilities:
+          #  add: ["NET_ADMIN"]

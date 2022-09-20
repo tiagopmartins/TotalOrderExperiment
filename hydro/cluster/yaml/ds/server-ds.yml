@@ -17,7 +17,7 @@ apiVersion: apps/v1
 kind: ReplicaSet
 metadata:
   name: server-nodes
-  labels: 
+  labels:
     role: server
 spec:
   selector:
@@ -36,13 +36,13 @@ spec:
             matchLabels:
               role: server
       containers:
-      - name: server-container
-        image: tiagopm/to-experiment:server
-        imagePullPolicy: Always
-        env:
-        - name: LIBC_FATAL_STDERR_
-          value: "1"
-        securityContext:
-          capabilities:
-            add:
-              - NET_ADMIN
+        - name: server-container
+          image: tiagopm/to-experiment:server
+          imagePullPolicy: Always
+          env:
+            - name: LIBC_FATAL_STDERR_
+              value: "1"
+          securityContext:
+            privileged: true
+          #capabilities:
+          #  add: ["NET_ADMIN"]
