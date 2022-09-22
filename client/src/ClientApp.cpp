@@ -43,6 +43,8 @@ int main(int argc, char *argv[]) {
         std::string cmd;
         getline(ss, cmd, ' ');
 
+        std::cout << cmd << std::endl;
+
         if (!cmd.compare("begin")) {
             std::string duration;
             getline(ss, duration, ' ');
@@ -68,9 +70,6 @@ int main(int argc, char *argv[]) {
             redis->publish("to-exp", "servers");
             delete servers;
 
-        } else if (!cmd.compare("exit")) {
-            std::cout << "Frontend exited" << std::endl;
-        
         } else {
             std::cerr << "Invalid command specified.\n" << std::endl;
         }
