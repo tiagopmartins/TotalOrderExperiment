@@ -113,6 +113,22 @@ void printProbing(std::map<std::string, std::vector<std::vector<std::string>>> *
 }
 
 
+// SERVERS
+
+/**
+ * @brief Prints the servers that are active.
+ *
+ * @param servers List containing the addresses of the servers.
+ */
+void printServers(std::vector<std::string> *servers) {
+    std::cout << "Servers:" << std::endl;
+    for (std::string const &address : *servers) {
+        std::cout << "\t- " << address << '\n';
+    }
+    std::cout << std::endl;
+}
+
+
 /**
  * @brief Waits for a subscriber to consume a message.
  * 
@@ -146,8 +162,8 @@ int main(int argc, char *argv[]) {
     }
 
     bool consumed = false;
-    std::map<std::string, std::vector<std::string>> *logs = new std::map<std::string, std::vector<std::string>>();
-    std::map<std::string, std::vector<std::vector<std::string>>> *probing = new std::map<std::string, std::vector<std::vector<std::string>>>();
+    auto logs = new std::map<std::string, std::vector<std::string>>();
+    auto probing = new std::map<std::string, std::vector<std::vector<std::string>>>();
     sw::redis::Redis *redis;
 
     try {
@@ -178,6 +194,12 @@ int main(int argc, char *argv[]) {
 
             readProbing(probing, probingRes);
             printProbing(probing);
+
+        } else if (!msg.compare("servers")) {
+            std::vector<std::string> *serverList = new std::vector<std::string>();
+            redis->lrange("servers", 0, -1, std::back_inserter(*serverList));
+
+            printServers(serverList);
         }
 
         consumed = true;
@@ -200,12 +222,16 @@ int main(int argc, char *argv[]) {
             redis->publish("to-exp", "probe " + duration);
             waitConsume(&sub, &consumed);
 
+        } else if (!cmd.compare("get-servers")) {
+            redis->publish("to-exp", "get-servers");
+            waitConsume(&sub, &consumed);
+
         } else if (!cmd.compare("exit")) {
-            delete redis;
-            delete logs;
-            delete probing;
-            return 0;
-        
+                delete redis;
+                delete logs;
+                delete probing;
+                return 0;
+
         } else {
             std::cerr << "Invalid command specified.\n" << std::endl;
         }

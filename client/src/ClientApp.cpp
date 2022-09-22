@@ -62,6 +62,12 @@ int main(int argc, char *argv[]) {
             redis->publish("to-exp", "probing");
             delete probing;
         
+        } else if (!cmd.compare("get-servers")) {
+            std::vector<std::string> *servers = client->serverList();
+            redis->rpush("servers", servers->begin(), servers->end());
+            redis->publish("to-exp", "servers");
+            delete servers;
+
         } else if (!cmd.compare("exit")) {
             std::cout << "Frontend exited" << std::endl;
         

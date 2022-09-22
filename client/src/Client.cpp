@@ -20,6 +20,15 @@ Client::Client(std::shared_ptr<grpc::Channel> channel) : _stub(messages::Client:
     findProcesses();
 }
 
+std::vector<std::string>* Client::serverList() {
+    std::vector<std::string>* serverList = new std::vector<std::string>();
+    for (auto const &[id, address] : this->_servers) {
+        serverList->push_back(address);
+    }
+
+    return serverList;
+}
+
 void Client::findProcesses() {
     YAML::Node addresses = YAML::LoadFile(SERVER_LIST_PATH);
 

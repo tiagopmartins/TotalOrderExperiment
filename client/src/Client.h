@@ -44,6 +44,13 @@ public:
     }
 
     /**
+     * Converts the server map into a list of addresses.
+     *
+     * @return Vector with the addresses of the servers.
+     */
+    std::vector<std::string>* serverList();
+
+    /**
      * @brief Finds all the processes alive and stores them.
      * 
      */
