@@ -236,6 +236,4 @@ int main(int argc, char *argv[]) {
             std::cerr << "Invalid command specified.\n" << std::endl;
         }
     }
-
-    return 0;
 }

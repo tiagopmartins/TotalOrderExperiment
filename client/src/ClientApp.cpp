@@ -43,6 +43,9 @@ int main(int argc, char *argv[]) {
         std::string cmd;
         getline(ss, cmd, ' ');
 
+        std::cout << "Message: " << msg << std::endl;
+        std::cout << "Command: " << cmd << std::endl;
+
         if (!cmd.compare("begin")) {
             std::string duration;
             getline(ss, duration, ' ');
