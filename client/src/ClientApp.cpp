@@ -43,8 +43,7 @@ int main(int argc, char *argv[]) {
         std::string cmd;
         getline(ss, cmd, ' ');
 
-        std::cout << "Message: " << msg << std::endl;
-        std::cout << "Command: " << cmd << std::endl;
+        std::cout << !cmd.compare("get-servers") << std::endl;
 
         if (!cmd.compare("begin")) {
             std::string duration;
@@ -60,12 +59,14 @@ int main(int argc, char *argv[]) {
         } else if (!cmd.compare("probe")) {
             std::string duration;
             getline(ss, duration, ' ');
-            std::vector<std::string> *probing = client->probe(std::atoi(duration.c_str()));
+            std::vector<std::string> *probing = client->probe(std::strtol(duration.c_str(), nullptr, 10));
             redis->rpush("probe", probing->begin(), probing->end());
             redis->publish("to-exp", "probing");
             delete probing;
         
         } else if (!cmd.compare("get-servers")) {
+            std::cout << "getting servers" << std::endl;
+
             std::vector<std::string> *servers = client->serverList();
             redis->rpush("servers", servers->begin(), servers->end());
             redis->publish("to-exp", "servers");
