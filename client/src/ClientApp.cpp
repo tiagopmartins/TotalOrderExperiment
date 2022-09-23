@@ -43,7 +43,7 @@ int main(int argc, char *argv[]) {
         std::string cmd;
         getline(ss, cmd, ' ');
 
-        std::cout << !cmd.compare("get-servers") << std::endl;
+        std::cout << msg << std::endl;
 
         if (!cmd.compare("begin")) {
             std::string duration;
@@ -53,7 +53,7 @@ int main(int argc, char *argv[]) {
         } else if (!cmd.compare("fetch")) {
             std::vector<std::string> *logs = client->fetchLog();
             redis->rpush("logs", logs->begin(), logs->end());
-            redis->publish("to-exp", "benchmarks");
+            redis->publish("to-client", "benchmarks");
             delete logs;
         
         } else if (!cmd.compare("probe")) {
@@ -61,15 +61,13 @@ int main(int argc, char *argv[]) {
             getline(ss, duration, ' ');
             std::vector<std::string> *probing = client->probe(std::strtol(duration.c_str(), nullptr, 10));
             redis->rpush("probe", probing->begin(), probing->end());
-            redis->publish("to-exp", "probing");
+            redis->publish("to-client", "probing");
             delete probing;
         
         } else if (!cmd.compare("get-servers")) {
-            std::cout << "getting servers" << std::endl;
-
             std::vector<std::string> *servers = client->serverList();
             redis->rpush("servers", servers->begin(), servers->end());
-            redis->publish("to-exp", "servers");
+            redis->publish("to-client", "servers");
             delete servers;
 
         } else {

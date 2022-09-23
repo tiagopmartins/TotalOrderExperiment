@@ -178,7 +178,7 @@ int main(int argc, char *argv[]) {
 
     // Redis subscriber
     sw::redis::Subscriber sub = redis->subscriber();
-    sub.subscribe("to-exp");
+    sub.subscribe("to-client");
 
     sub.on_message([&consumed, &logs, &probing, &redis](std::string channel, std::string msg) {
         if (!msg.compare("benchmarks")) {
