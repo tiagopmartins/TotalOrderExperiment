@@ -65,7 +65,7 @@ int main(int argc, char *argv[]) {
         
         } else if (!cmd.compare("get-servers")) {
             std::vector<std::string> *servers = client->serverList();
-            redis->rpush("servers", servers->begin(), servers->end());
+            redis->rpush("serverList", servers->begin(), servers->end());
             redis->publish("to-client", "servers");
             delete servers;
 

@@ -8,8 +8,8 @@
 
 const int EXPECTED_ARGS_N = 2;      // Expected number of arguments passed to the program
 
-const int REDIS_EXTERNAL_PORT = 30000;
-//const int REDIS_EXTERNAL_PORT = 6379;
+//const int REDIS_EXTERNAL_PORT = 30000;
+const int REDIS_EXTERNAL_PORT = 6379;
 
 // ------- DATA LOGS
 
