@@ -6,28 +6,38 @@
 
 Starts a message exchange between all servers during the amount of time specified.
 
-`begin *time (seconds)*`
+```
+begin seconds
+```
 
 ### exit
 
 Exits the program.
 
-`exit`
+```
+exit
+```
 
 ### fetch
 
 Fetches the time values obtained during the message exchange.
 
-`fetch`
+```
+fetch
+```
 
 ### get-servers
 
 Fetches the list of active servers.
 
-`get-servers`
+```
+get-servers
+```
 
 ### probe
 
 Starts probing the specified address. Separates the value in time slots of one second.
 
-`probe *address* *time (seconds)*`
+```
+probe address seconds
+```
