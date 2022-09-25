@@ -11,6 +11,47 @@ const int EXPECTED_ARGS_N = 2;      // Expected number of arguments passed to th
 const int REDIS_EXTERNAL_PORT = 30000;
 //const int REDIS_EXTERNAL_PORT = 6379;
 
+
+// STATISTICS
+
+/**
+ * Calculates the average value of a portion of time (second).
+ *
+ * @param times
+ * @param second
+ * @return
+ */
+double averageValue(std::vector<std::vector<std::string>> *times, int second) {
+    std::vector<std::string> timeSlots = times->at(second - 1);
+
+    double sum = 0;
+    for (std::string val : timeSlots) {
+        sum += strtol(val.c_str(), nullptr, 10);
+    }
+
+    return sum / timeSlots.size();
+}
+
+/**
+ * Calculates the standard deviation of a portion of time (second).
+ *
+ * @param times
+ * @param second
+ * @return
+ */
+double stdDeviation(std::vector<std::vector<std::string>> *times, int second) {
+    std::vector<std::string> timeSlots = times->at(second - 1);
+    int average = averageValue(times, second);
+
+    double sum = 0;
+    for (std::string val : timeSlots) {
+        sum += pow((strtol(val.c_str(), nullptr, 10) - average), 2);
+    }
+
+    return sqrt(sum / timeSlots.size());
+}
+
+
 // ------- DATA LOGS
 
 /**
@@ -98,8 +139,13 @@ void printProbing(std::vector<std::vector<std::string>> *probing) {
         for (std::string const &value : perSecondvalues) {
             std::cout << '\t' << value << '\n';
         }
-        second++;
+        std::cout << '\n';
+
+        std::cout << "\tAverage: " << averageValue(probing, second) << '\n';
+        std::cout << "\tStandard deviation: " << stdDeviation(probing, second) << '\n';
         std::cout << std::endl;
+
+        second++;
     }
 }
 

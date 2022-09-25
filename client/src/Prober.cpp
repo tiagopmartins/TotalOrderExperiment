@@ -29,29 +29,6 @@ void Prober::createStub(std::string address) {
     _stub = messages::Prober::NewStub(grpc::CreateChannel(address, grpc::InsecureChannelCredentials()));
 }
 
-int64_t Prober::averageValue(int second) {
-    std::vector<int64_t> times = _times->at(second);
-
-    int64_t sum = 0;
-    for (int64_t val : times) {
-        sum += val;
-    }
-
-    return sum / times.size();
-}
-
-int64_t Prober::stdDeviation(int second) {
-    std::vector<int64_t> times = _times->at(second);
-    int average = averageValue(second);
-
-    int64_t sum = 0;
-    for (int64_t val : times) {
-        sum += pow((val - average), 2);
-    }
-
-    return sqrt(sum / times.size());
-}
-
 int64_t Prober::sendProbingMessage(std::string address) {
     messages::ProbingRequest req;
     messages::ProbingReply reply;

@@ -31,24 +31,6 @@ private:
 
     void createStub(std::string address);
 
-    // Statistical methods
-
-    /**
-     * Calculates the average value of a portion of time (second).
-     *
-     * @param second
-     * @return
-     */
-    int64_t averageValue(int second);
-
-    /**
-     * Calculates the standard deviation of a portion of time (second).
-     *
-     * @param second
-     * @return
-     */
-    int64_t stdDeviation(int second);
-
 public:
     Prober();
 
