@@ -77,10 +77,11 @@ public:
     /**
      * @brief Starts probing the network to check it's stabilty.
      *
+     * @param address Address of the server to probe.
      * @param duration Duration of the probing.
      * @return Vector with the times
      */
-    std::vector<std::string>* probe(int duration);
+    std::vector<std::string>* probe(std::string address, int duration);
 
     void AsyncCompleteRpc();
 

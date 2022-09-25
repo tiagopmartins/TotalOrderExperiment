@@ -61,53 +61,44 @@ void printLogs(std::map<std::string, std::vector<std::string>> *logs) {
  * @brief Reads the probing results for each server divided by its respective
  * address.
  *
- * @param probing Map between the server address and a vector divided into vectors
- * representing each second, containing the results inside that same second.
+ * @param probing Vector divided into vectors representing each second,
+ * containing the results inside that same second.
  * @param probingList List of strings containing data.
- *      Form: ["SERVER$address1", "SECOND$1", "value1", "value2", ..., "SECOND$2", ..., "SERVER$address2", ...]
+ *      Form: ["SECOND$1", "value1", "value2", ..., "SECOND$2", ...]
  */
-void readProbing(std::map<std::string, std::vector<std::vector<std::string>>> *probing, std::vector<std::string> *probingList) {
-    std::string currentServer = "";
+void readProbing(std::vector<std::vector<std::string>> *probing, std::vector<std::string> *probingList) {
     int currentSecond = 0;
     for (auto it = probingList->begin(); it != probingList->end(); it++) {
         std::string token;
         std::stringstream ss(*it);
         getline(ss, token, '$');
 
-        if (!token.compare("SERVER")) {
-            getline(ss, token, ' ');    // get new server address
-            probing->insert({token, std::vector<std::vector<std::string>>()});
-            currentServer = token;
-            continue;
-
-        } else if (!token.compare("SECOND")) {
+        if (!token.compare("SECOND")) {
+            probing->push_back(std::vector<std::string>());
             getline(ss, token, ' ');    // get the new second
-            probing->at(currentServer).push_back(std::vector<std::string>());
             currentSecond = std::atoi(token.c_str());
             continue;
         }
 
-        probing->at(currentServer)[currentSecond - 1].push_back(token);   // push probing value
+        probing->at(currentSecond - 1).push_back(token);   // push probing value
     }
 }
 
 /**
- * @brief Prints the probing values for each server and for each second.
+ * @brief Prints the probing values for a certain server (specified at
+ * runtime) and for each second.
  *
- * @param probing Map between the server address and a vector of probing values,
- * divided by seconds.
+ * @param probing Vector divided into vectors representing each second,
+ * containing the results inside that same second.
  */
-void printProbing(std::map<std::string, std::vector<std::vector<std::string>>> *probing) {
-    for (auto const &[address, vector] : *probing) {
-        std::cout << "=> " << address << '\n';
-        int second = 1;
-        for (std::vector<std::string> const &values : vector) {
-            std::cout << "\t(" << second << "s)\n";
-            for (std::string const &value : values) {
-                std::cout << "\t- " << value << "ms\n";
-            }
-            second++;
+void printProbing(std::vector<std::vector<std::string>> *probing) {
+    int second = 1;
+    for (auto const &perSecondvalues : *probing) {
+        std::cout << "\t(" << second << "s) in ms\n";
+        for (std::string const &value : perSecondvalues) {
+            std::cout << '\t' << value << '\n';
         }
+        second++;
         std::cout << std::endl;
     }
 }
@@ -163,7 +154,7 @@ int main(int argc, char *argv[]) {
 
     bool consumed = false;
     auto logs = new std::map<std::string, std::vector<std::string>>();
-    auto probing = new std::map<std::string, std::vector<std::vector<std::string>>>();
+    auto probing = new std::vector<std::vector<std::string>>();
     sw::redis::Redis *redis;
 
     try {
@@ -189,6 +180,7 @@ int main(int argc, char *argv[]) {
             printLogs(logs);
 
         } else if (!msg.compare("probing")) {
+            probing->clear();
             std::vector<std::string> *probingRes = new std::vector<std::string>();
             redis->lrange("probe", 0, -1, std::back_inserter(*probingRes));
 
@@ -197,7 +189,7 @@ int main(int argc, char *argv[]) {
 
         } else if (!msg.compare("servers")) {
             std::vector<std::string> *serverList = new std::vector<std::string>();
-            redis->lrange("servers", 0, -1, std::back_inserter(*serverList));
+            redis->lrange("serverList", 0, -1, std::back_inserter(*serverList));
 
             printServers(serverList);
         }
@@ -206,7 +198,7 @@ int main(int argc, char *argv[]) {
     });
 
     while (true) {
-        std::string cmd, duration;
+        std::string cmd, address, duration;
         std::cin >> cmd;
 
         if (!cmd.compare("begin")) {
@@ -218,8 +210,15 @@ int main(int argc, char *argv[]) {
             waitConsume(&sub, &consumed);
 
         } else if (!cmd.compare("probe")) {
+            std::cin >> address;
             std::cin >> duration;
-            redis->publish("to-exp", "probe " + duration);
+
+            std::string msg = "probe ";
+            msg.append(address);
+            msg.append(" ");
+            msg.append(duration);
+
+            redis->publish("to-exp", msg);
             waitConsume(&sub, &consumed);
 
         } else if (!cmd.compare("get-servers")) {

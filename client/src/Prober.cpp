@@ -11,12 +11,8 @@
 #include "Prober.h"
 
 Prober::Prober() {
-    _times = new std::map<std::string, std::vector<std::vector<int64_t>>>();
+    _times = new std::vector<std::vector<int64_t>>();
     findProcesses();
-
-    for (const std::string address : _servers) {
-        _times->insert({address, std::vector<std::vector<int64_t>>()});
-    }
 }
 
 void Prober::findProcesses() {
@@ -33,35 +29,27 @@ void Prober::createStub(std::string address) {
     _stub = messages::Prober::NewStub(grpc::CreateChannel(address, grpc::InsecureChannelCredentials()));
 }
 
-std::vector<int64_t>* Prober::averageValue(std::string address) {
-    std::vector<int64_t> *averages = new std::vector<int64_t>;
-    std::vector<std::vector<int64_t>> times = _times->at(address);   // Second partitions for the address
+int64_t Prober::averageValue(int second) {
+    std::vector<int64_t> times = _times->at(second);
 
-    for (std::vector<int64_t> const &values : times) {
-        int64_t sum = 0;
-        for (int64_t val : values) {
-            sum += val;
-        }
-        averages->push_back(sum / values.size());
+    int64_t sum = 0;
+    for (int64_t val : times) {
+        sum += val;
     }
 
-    return averages;
+    return sum / times.size();
 }
 
-std::vector<int64_t>* Prober::stdDeviation(std::string address) {
-    std::vector<int64_t> *deviations = new std::vector<int64_t>;
-    std::vector<std::vector<int64_t>> times = _times->at(address);   // Second partitions for the address
-    std::vector<int64_t> *averages = averageValue(address);
+int64_t Prober::stdDeviation(int second) {
+    std::vector<int64_t> times = _times->at(second);
+    int average = averageValue(second);
 
-    for (size_t i = 0; i < times.size(); i++) {
-        int64_t sum = 0;
-        for (int64_t val : times[i]) {
-            sum += pow((val - averages->at(i)), 2);
-        }
-        deviations->push_back(sqrt(sum / times[i].size()));
+    int64_t sum = 0;
+    for (int64_t val : times) {
+        sum += pow((val - average), 2);
     }
-    
-    return deviations;
+
+    return sqrt(sum / times.size());
 }
 
 int64_t Prober::sendProbingMessage(std::string address) {
@@ -90,16 +78,18 @@ int64_t Prober::sendProbingMessage(std::string address) {
     }
 }
 
-std::map<std::string, std::vector<std::vector<int64_t>>>* Prober::stability(int duration) {
+std::vector<std::vector<int64_t>>* Prober::stability(std::string address, int duration) {
+    this->_times->clear();
+
     int seconds = 0, res = 0;
     while (seconds < duration) {
-        _times->at(_servers[0]).push_back(std::vector<int64_t>());
+        _times->push_back(std::vector<int64_t>());
         // Probing for one second at a time
         std::chrono::steady_clock::time_point startSecond = std::chrono::steady_clock::now();
         while (std::chrono::duration_cast<std::chrono::seconds>(std::chrono::steady_clock::now() - startSecond).count() < 1) {
-            // TODO: turn this into an async method that sends to every server
-            res = sendProbingMessage(_servers[0]);
-            _times->at(_servers[0])[seconds].push_back(res);
+            res = sendProbingMessage(address);
+            _times->push_back(std::vector<int64_t>());
+            _times->at(seconds).push_back(res);
         }
 
         seconds++;

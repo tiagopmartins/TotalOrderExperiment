@@ -95,19 +95,17 @@ std::vector<std::string>* Client::fetchLog() {
     return logs;
 }
 
-std::vector<std::string>* Client::probe(int duration) {
+std::vector<std::string>* Client::probe(std::string address, int duration) {
     Prober prober = Prober();
-    std::map<std::string, std::vector<std::vector<int64_t>>> *times = prober.stability(duration);
+    std::vector<std::vector<int64_t>> *times = prober.stability(address, duration);
 
     std::vector<std::string> *probing = new std::vector<std::string>();
-    for (auto const &[address, perSecondValues] : *times) {
-        probing->push_back("SERVER$" + address);
+    for (auto const &perSecondValues : *times) {
         int s = 1;
-        for (std::vector<int64_t> const &second : perSecondValues) {
-            probing->push_back("SECOND$" + std::to_string(s));
-            for (int64_t const &value : second) {
-                probing->push_back(std::to_string(value));
-            }
+        probing->push_back("SECOND$" + std::to_string(s));
+
+        for (int64_t const &value : perSecondValues) {
+            probing->push_back(std::to_string(value));
             s++;
         }
     }

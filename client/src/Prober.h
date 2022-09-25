@@ -21,7 +21,7 @@ private:
 
     std::unique_ptr<messages::Prober::Stub> _stub;
 
-    std::map<std::string, std::vector<std::vector<int64_t>>>* _times;   // Mapping between addresses and times (per second)
+    std::vector<std::vector<int64_t>>* _times;   // Mapping between addresses and times (per second)
 
     /**
      * @brief Finds all the processes alive and stores them.
@@ -33,9 +33,21 @@ private:
 
     // Statistical methods
 
-    std::vector<int64_t>* averageValue(std::string address);
+    /**
+     * Calculates the average value of a portion of time (second).
+     *
+     * @param second
+     * @return
+     */
+    int64_t averageValue(int second);
 
-    std::vector<int64_t>* stdDeviation(std::string address);
+    /**
+     * Calculates the standard deviation of a portion of time (second).
+     *
+     * @param second
+     * @return
+     */
+    int64_t stdDeviation(int second);
 
 public:
     Prober();
@@ -44,7 +56,7 @@ public:
         return this->_servers;
     }
 
-    std::map<std::string, std::vector<std::vector<int64_t>>>* times() {
+    std::vector<std::vector<int64_t>>* times() {
         return this->_times;
     }    
 
@@ -57,14 +69,14 @@ public:
     int64_t sendProbingMessage(std::string address);
 
     /**
-     * @brief Evaluates the stability of the network, including the time messages
-     * take to arrive. Sends the results to the Redis database.
+     * @brief Evaluates the stability of the network, to a certain address,
+     * including the time messages take to arrive. Sends the results to the Redis database.
      *
      * @duration Duration of the probing.
-     * @return Mapping between server addresses and a vector divided into sections
-     * (vectors) containing the values of the probing during each second.
+     * @return Vector divided into sections (vectors) containing the values of the
+     * probing during each second.
      */
-    std::map<std::string, std::vector<std::vector<int64_t>>>* stability(int duration);
+    std::vector<std::vector<int64_t>>* stability(std::string address, int duration);
 
 };
 
