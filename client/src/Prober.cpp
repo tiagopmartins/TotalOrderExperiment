@@ -82,17 +82,14 @@ std::vector<std::vector<int64_t>>* Prober::stability(std::string address, int du
     this->_times->clear();
 
     int seconds = 0, res = 0;
-    while (seconds < duration) {
+    for (int s = 0; s < duration; s++) {
         _times->push_back(std::vector<int64_t>());
         // Probing for one second at a time
         std::chrono::steady_clock::time_point startSecond = std::chrono::steady_clock::now();
         while (std::chrono::duration_cast<std::chrono::seconds>(std::chrono::steady_clock::now() - startSecond).count() < 1) {
             res = sendProbingMessage(address);
-            _times->push_back(std::vector<int64_t>());
-            _times->at(seconds).push_back(res);
+            _times->at(s).push_back(res);
         }
-
-        seconds++;
     }
 
     return _times;

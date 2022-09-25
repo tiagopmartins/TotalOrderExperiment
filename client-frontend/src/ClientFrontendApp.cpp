@@ -8,8 +8,8 @@
 
 const int EXPECTED_ARGS_N = 2;      // Expected number of arguments passed to the program
 
-//const int REDIS_EXTERNAL_PORT = 30000;
-const int REDIS_EXTERNAL_PORT = 6379;
+const int REDIS_EXTERNAL_PORT = 30000;
+//const int REDIS_EXTERNAL_PORT = 6379;
 
 // ------- DATA LOGS
 
@@ -94,7 +94,7 @@ void readProbing(std::vector<std::vector<std::string>> *probing, std::vector<std
 void printProbing(std::vector<std::vector<std::string>> *probing) {
     int second = 1;
     for (auto const &perSecondvalues : *probing) {
-        std::cout << "\t(" << second << "s) in ms\n";
+        std::cout << "-> \t(" << second << "s) in ms\n";
         for (std::string const &value : perSecondvalues) {
             std::cout << '\t' << value << '\n';
         }

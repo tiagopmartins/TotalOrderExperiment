@@ -99,15 +99,14 @@ std::vector<std::string>* Client::probe(std::string address, int duration) {
     Prober prober = Prober();
     std::vector<std::vector<int64_t>> *times = prober.stability(address, duration);
 
+    int s = 1;
     std::vector<std::string> *probing = new std::vector<std::string>();
     for (auto const &perSecondValues : *times) {
-        int s = 1;
         probing->push_back("SECOND$" + std::to_string(s));
-
         for (int64_t const &value : perSecondValues) {
             probing->push_back(std::to_string(value));
-            s++;
         }
+        s++;
     }
 
     return probing;
