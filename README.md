@@ -10,6 +10,14 @@ Starts a message exchange between all servers during the amount of time specifie
 begin seconds
 ```
 
+### dump
+
+Dumps the contents of the Redis database into a file. Supported types: [probing, logs]
+
+```
+dump type
+```
+
 ### exit
 
 Exits the program.
