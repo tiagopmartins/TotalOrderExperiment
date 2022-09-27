@@ -1,4 +1,5 @@
 #include <iostream>
+#include <fstream>
 #include <string>
 #include <sstream>
 #include <vector>
@@ -15,40 +16,34 @@ const int REDIS_EXTERNAL_PORT = 30000;
 // STATISTICS
 
 /**
- * Calculates the average value of a portion of time (second).
+ * Calculates the average value of a vector.
  *
- * @param times
- * @param second
+ * @param vec
  * @return
  */
-double averageValue(std::vector<std::vector<std::string>> *times, int second) {
-    std::vector<std::string> timeSlots = times->at(second - 1);
-
+double averageValue(std::vector<std::string> *vec) {
     double sum = 0;
-    for (std::string val : timeSlots) {
+    for (std::string val : *vec) {
         sum += strtol(val.c_str(), nullptr, 10);
     }
 
-    return sum / timeSlots.size();
+    return sum / vec->size();
 }
 
 /**
- * Calculates the standard deviation of a portion of time (second).
+ * Calculates the standard deviation of a vector.
  *
- * @param times
- * @param second
+ * @param vec
  * @return
  */
-double stdDeviation(std::vector<std::vector<std::string>> *times, int second) {
-    std::vector<std::string> timeSlots = times->at(second - 1);
-    int average = averageValue(times, second);
-
+double stdDeviation(std::vector<std::string> *vec) {
+    int average = averageValue(vec);
     double sum = 0;
-    for (std::string val : timeSlots) {
+    for (std::string val : *vec) {
         sum += pow((strtol(val.c_str(), nullptr, 10) - average), 2);
     }
 
-    return sqrt(sum / timeSlots.size());
+    return sqrt(sum / vec->size());
 }
 
 
@@ -84,14 +79,15 @@ void readLogs(std::map<std::string, std::vector<std::string>> *logs, std::vector
  * @brief Prints the logs and statistics for each server in a human-friendly way.
  *
  * @param logs Map between the server address and a vector of logs for it.
+ * @param file File to dump the contents into.
  */
-void printLogs(std::map<std::string, std::vector<std::string>> *logs) {
+void dumpLogs(std::map<std::string, std::vector<std::string>> *logs, std::string file) {
+    std::ofstream output(file + ".txt");
     for (auto const &[address, vector] : *logs) {
-        std::cout << "=> " << address << '\n';
+        output << "-> " << address << '\n';
         for (std::string const &value : vector) {
-            std::cout << "\t- " << value << '\n';
+            output << '\t' << value << '\n';
         }
-        std::cout << std::endl;
     }
 }
 
@@ -126,24 +122,24 @@ void readProbing(std::vector<std::vector<std::string>> *probing, std::vector<std
 }
 
 /**
- * @brief Prints the probing values for a certain server (specified at
- * runtime) and for each second.
+ * Dumps the probing results from the vector given as input into the specified file.
  *
- * @param probing Vector divided into vectors representing each second,
- * containing the results inside that same second.
+ * @param probing Probing vector, divided into vectors representing each second.
+ * @param file File to dump the contents into.
  */
-void printProbing(std::vector<std::vector<std::string>> *probing) {
+void dumpProbing(std::vector<std::vector<std::string>> *probing, std::string file) {
+    std::ofstream output(file + ".txt");
     int second = 1;
-    for (auto const &perSecondvalues : *probing) {
-        std::cout << "-> \t(" << second << "s) in ms\n";
-        for (std::string const &value : perSecondvalues) {
-            std::cout << '\t' << value << '\n';
+    for (auto const &perSecondValues : *probing) {
+        output << "-> " << second << "s\n";
+        for (std::string const &value : perSecondValues) {
+            output << '\t' << value << '\n';
         }
-        std::cout << '\n';
 
-        std::cout << "\tAverage: " << averageValue(probing, second) << '\n';
-        std::cout << "\tStandard deviation: " << stdDeviation(probing, second) << '\n';
-        std::cout << std::endl;
+        output << '\n';
+        output << "\tAverage: " << averageValue(&(probing->at(second - 1))) << '\n';
+        output << "\tStandard deviation: " << stdDeviation(&(probing->at(second - 1))) << '\n';
+        output << std::endl;
 
         second++;
     }
@@ -168,15 +164,15 @@ void printServers(std::vector<std::string> *servers) {
 
 /**
  * @brief Waits for a subscriber to consume a message.
- * 
- * @param sub 
+ *
+ * @param sub
  * @param consumed Flag to know if the output was consumed.
  */
 void waitConsume(sw::redis::Subscriber *sub, bool *consumed) {
     do {
         try {
             sub->consume();
-        
+
         } catch (const sw::redis::Error &err) {
             std::cerr << "Redis error: " << err.what() << std::endl;
         }
@@ -185,6 +181,7 @@ void waitConsume(sw::redis::Subscriber *sub, bool *consumed) {
 
     *consumed = false;  // reset flag
 }
+
 
 /**
  * @brief Frontend program to serve as a means of communication with the real
@@ -221,22 +218,17 @@ int main(int argc, char *argv[]) {
         if (!msg.compare("benchmarks")) {
             std::vector<std::string> *logsList = new std::vector<std::string>();
             redis->lrange("logs", 0, -1, std::back_inserter(*logsList));
-
             readLogs(logs, logsList);
-            printLogs(logs);
 
         } else if (!msg.compare("probing")) {
             probing->clear();
             std::vector<std::string> *probingRes = new std::vector<std::string>();
             redis->lrange("probe", 0, -1, std::back_inserter(*probingRes));
-
             readProbing(probing, probingRes);
-            printProbing(probing);
 
         } else if (!msg.compare("servers")) {
             std::vector<std::string> *serverList = new std::vector<std::string>();
             redis->lrange("serverList", 0, -1, std::back_inserter(*serverList));
-
             printServers(serverList);
         }
 
@@ -244,16 +236,29 @@ int main(int argc, char *argv[]) {
     });
 
     while (true) {
-        std::string cmd, address, duration;
+        std::string cmd, address, duration, target;
         std::cin >> cmd;
 
         if (!cmd.compare("begin")) {
             std::cin >> duration;
             redis->publish("to-exp", "begin " + duration);
+            std::cout << std::endl;
         
+        } else if (!cmd.compare("dump")) {
+            std::cin >> target;
+            if (!target.compare("probing")) {
+                dumpProbing(probing, target);
+
+            } else if (!target.compare("logs")) {
+                dumpLogs(logs, target);
+            }
+
+            std::cout << "Successfully dumped contents into file.\n" << std::endl;
+
         } else if (!cmd.compare("fetch")) {
             redis->publish("to-exp", "fetch");
             waitConsume(&sub, &consumed);
+            std::cout << "Successfully fetched messages.\n" << std::endl;
 
         } else if (!cmd.compare("probe")) {
             std::cin >> address;
@@ -266,16 +271,18 @@ int main(int argc, char *argv[]) {
 
             redis->publish("to-exp", msg);
             waitConsume(&sub, &consumed);
+            std::cout << "Successfully obtained probing results.\n" << std::endl;
 
         } else if (!cmd.compare("get-servers")) {
             redis->publish("to-exp", "get-servers");
             waitConsume(&sub, &consumed);
 
         } else if (!cmd.compare("exit")) {
-                delete redis;
-                delete logs;
-                delete probing;
-                return 0;
+            std::cout << "Exiting :)" << std::endl;
+            delete redis;
+            delete logs;
+            delete probing;
+            return 0;
 
         } else {
             std::cerr << "Invalid command specified.\n" << std::endl;
