@@ -3,5 +3,9 @@
 cmake-build-debug
 __pycache__
 
+data-analysis
+
 build
 dump.rdb
+
+probing.*
