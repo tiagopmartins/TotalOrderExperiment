@@ -1,11 +1,13 @@
 #include <iostream>
 #include <fstream>
 #include <string>
-#include <sstream>
 #include <vector>
 #include <map>
 
 #include <sw/redis++/redis++.h>
+#include <nlohmann/json.hpp>
+
+using json = nlohmann::json;
 
 const int EXPECTED_ARGS_N = 2;      // Expected number of arguments passed to the program
 
@@ -129,6 +131,9 @@ void readProbing(std::vector<std::vector<std::string>> *probing, std::vector<std
  */
 void dumpProbing(std::vector<std::vector<std::string>> *probing, std::string file) {
     std::ofstream output(file + ".txt");
+    std::ofstream jsonFile(file + ".json");
+    json j;
+
     int second = 1;
     for (auto const &perSecondValues : *probing) {
         output << "-> " << second << "s\n";
@@ -141,8 +146,14 @@ void dumpProbing(std::vector<std::vector<std::string>> *probing, std::string fil
         output << "\tStandard deviation: " << stdDeviation(&(probing->at(second - 1))) << '\n';
         output << std::endl;
 
+        // Send the values into a JSON object
+        json jValues(perSecondValues);
+        j[std::to_string(second)] = jValues;
+
         second++;
     }
+
+    jsonFile << j << std::endl;
 }
 
 
