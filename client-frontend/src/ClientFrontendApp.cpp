@@ -165,23 +165,21 @@ void dumpProbing(std::vector<std::vector<std::string>> *probing, std::string fil
  *
  * @param servers Map between the datacenter and a vector of addresses.
  * @param serverList List of strings containing data.
- *      Form: ["DATACENTER$datacenter1", "addr1", "addr2", ..., "DATACENTER$datacenter2", ...]
+ *      Form: ["datacenter1$addr1", "datacenter2$addr2", ...]
  */
 void readServers(std::map<std::string, std::vector<std::string>> *servers, std::vector<std::string> *serverList) {
     std::string currentDatacenter = "";
     for (auto it = serverList->begin(); it != serverList->end(); it++) {
-        std::string token;
+        std::string datacenter, ip;
         std::stringstream ss(*it);
-        getline(ss, token, '$');
+        getline(ss, datacenter, '$');
 
-        if (!token.compare("DATACENTER")) {
-            getline(ss, token, ' ');    // get new datacenter name
-            servers->insert({token, std::vector<std::string>()});
-            currentDatacenter = token;
-            continue;
+        if (!servers->count(datacenter)) {   // check the existence of the datacenter
+            servers->insert({datacenter, std::vector<std::string>()});
         }
 
-        servers->at(currentDatacenter).push_back(token);   // push new ip
+        getline(ss, ip, ' ');    // get ip
+        servers->at(datacenter).push_back(ip);
     }
 }
 

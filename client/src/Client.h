@@ -28,7 +28,6 @@ private:
     };
 
     std::map<int, std::string> _servers;
-    std::map<std::string, std::vector<int>> _datacenters;    // Mapping between datacenters and server IDs
     
     std::unique_ptr<messages::Client::Stub> _stub;
     grpc::CompletionQueue _cq;                          // Producer-consumer queue for asynchronous communication
@@ -42,10 +41,6 @@ public:
 
     std::map<int, std::string> servers() {
         return this->_servers;
-    }
-
-    std::map<std::string, std::vector<int>> datacenters() {
-        return this->_datacenters;
     }
 
     /**

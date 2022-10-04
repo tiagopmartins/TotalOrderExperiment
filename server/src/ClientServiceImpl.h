@@ -31,8 +31,8 @@ public:
         std::cout << "-> Received datacenter request\n" << std::endl;
 
         std::string datacenter = "";
-        if (getenv("MY_NODE_NAME")) {
-            datacenter = std::string(getenv("MY_NODE_NAME"));
+        if (getenv("NODE_NAME")) {
+            datacenter = std::string(getenv("NODE_NAME"));
         }
 
         reply->set_datacenter(datacenter);

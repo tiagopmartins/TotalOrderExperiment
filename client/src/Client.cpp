@@ -22,11 +22,11 @@ Client::Client(std::shared_ptr<grpc::Channel> channel) : _stub(messages::Client:
 
 std::vector<std::string>* Client::serverList() {
     std::vector<std::string>* serverList = new std::vector<std::string>();
-    for (auto const &[datacenter, ips] : this->_datacenters) {
-        serverList->push_back("DATACENTER$" + datacenter);
-        for (auto it = ips.begin(); it != ips.end(); it++) {
-            serverList->push_back(_servers.at(*it));
-        }
+    for (auto const &[id, ip] : this->_servers) {
+        std::string datacenter = getDatacenter(ip);
+        serverList->push_back(datacenter + "$" + ip);
+
+        std::cout << "DATACENTER: " << datacenter << std::endl;
     }
 
     return serverList;
@@ -38,17 +38,7 @@ void Client::findProcesses() {
     int id = 0;
     if (addresses["ips"]) {
         for (std::size_t i = 0; i < addresses["ips"].size(); i++) {
-            std::string ip = addresses["ips"][i].as<std::string>();
-            std::string datacenter = getDatacenter(ip);
-            _servers.insert({id, ip});
-
-            std::cout << "DATACENTER: " << datacenter << std::endl;
-
-            if (!_datacenters.count(datacenter)) {  // no key for the datacenter
-                _datacenters.insert({datacenter, std::vector<int>()});
-            }
-
-            _datacenters.at(datacenter).push_back(id);
+            _servers.insert({id, addresses["ips"][i].as<std::string>()});
             id++;
         }
     }
