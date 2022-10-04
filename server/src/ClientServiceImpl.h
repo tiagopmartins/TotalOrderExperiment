@@ -26,6 +26,19 @@ public:
         _server = nullptr;
     }
 
+    virtual grpc::Status datacenter(grpc::ServerContext *context, const messages::DatacenterRequest *request,
+                               messages::DatacenterReply *reply) override {
+        std::cout << "-> Received datacenter request\n" << std::endl;
+
+        std::string datacenter = "";
+        if (getenv("MY_NODE_NAME")) {
+            datacenter = std::string(getenv("MY_NODE_NAME"));
+        }
+
+        reply->set_datacenter(datacenter);
+        return grpc::Status::OK;
+    }
+
     /**
      * @brief Activates the server. Starts the message exchange.
      * 

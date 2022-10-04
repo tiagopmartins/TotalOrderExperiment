@@ -44,3 +44,6 @@ spec:
               value: "1"
           securityContext:
             privileged: true
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName

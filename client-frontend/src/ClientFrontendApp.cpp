@@ -68,7 +68,7 @@ void readLogs(std::map<std::string, std::vector<std::string>> *logs, std::vector
 
         if (!token.compare("SERVER")) {
             getline(ss, token, ' ');    // get new server address
-            logs->insert(std::pair<std::string, std::vector<std::string>>(token, std::vector<std::string>()));
+            logs->insert({token, std::vector<std::string>()});
             currentServer = token;
             continue;
         }
@@ -157,17 +157,46 @@ void dumpProbing(std::vector<std::vector<std::string>> *probing, std::string fil
 }
 
 
-// SERVERS
+// ------- SERVERS
+
+/**
+ * @brief Reads the server list containing the addresses of the servers for each
+ * datacenter.
+ *
+ * @param servers Map between the datacenter and a vector of addresses.
+ * @param serverList List of strings containing data.
+ *      Form: ["DATACENTER$datacenter1", "addr1", "addr2", ..., "DATACENTER$datacenter2", ...]
+ */
+void readServers(std::map<std::string, std::vector<std::string>> *servers, std::vector<std::string> *serverList) {
+    std::string currentDatacenter = "";
+    for (auto it = serverList->begin(); it != serverList->end(); it++) {
+        std::string token;
+        std::stringstream ss(*it);
+        getline(ss, token, '$');
+
+        if (!token.compare("DATACENTER")) {
+            getline(ss, token, ' ');    // get new datacenter name
+            servers->insert({token, std::vector<std::string>()});
+            currentDatacenter = token;
+            continue;
+        }
+
+        servers->at(currentDatacenter).push_back(token);   // push new ip
+    }
+}
 
 /**
  * @brief Prints the servers that are active.
  *
- * @param servers List containing the addresses of the servers.
+ * @param servers Mapping between datacenters and addresses.
  */
-void printServers(std::vector<std::string> *servers) {
+void printServers(std::map<std::string, std::vector<std::string>> *servers) {
     std::cout << "Servers:" << std::endl;
-    for (std::string const &address : *servers) {
-        std::cout << "\t- " << address << '\n';
+    for (auto const &[datacenter, addresses] : *servers) {
+        std::cout << "\t-> " << datacenter << '\n';
+        for (std::string const &addr : addresses) {
+            std::cout << "\t\t- " << addr << '\n';
+        }
     }
     std::cout << std::endl;
 }
@@ -207,6 +236,7 @@ int main(int argc, char *argv[]) {
     }
 
     bool consumed = false;
+    auto servers = new std::map<std::string, std::vector<std::string>>();
     auto logs = new std::map<std::string, std::vector<std::string>>();
     auto probing = new std::vector<std::vector<std::string>>();
     sw::redis::Redis *redis;
@@ -225,7 +255,7 @@ int main(int argc, char *argv[]) {
     sw::redis::Subscriber sub = redis->subscriber();
     sub.subscribe("to-client");
 
-    sub.on_message([&consumed, &logs, &probing, &redis](std::string channel, std::string msg) {
+    sub.on_message([&consumed, &servers, &logs, &probing, &redis](std::string channel, std::string msg) {
         if (!msg.compare("benchmarks")) {
             std::vector<std::string> *logsList = new std::vector<std::string>();
             redis->lrange("logs", 0, -1, std::back_inserter(*logsList));
@@ -240,7 +270,8 @@ int main(int argc, char *argv[]) {
         } else if (!msg.compare("servers")) {
             std::vector<std::string> *serverList = new std::vector<std::string>();
             redis->lrange("serverList", 0, -1, std::back_inserter(*serverList));
-            printServers(serverList);
+            readServers(servers, serverList);
+            printServers(servers);
         }
 
         consumed = true;

@@ -22,8 +22,11 @@ Client::Client(std::shared_ptr<grpc::Channel> channel) : _stub(messages::Client:
 
 std::vector<std::string>* Client::serverList() {
     std::vector<std::string>* serverList = new std::vector<std::string>();
-    for (auto const &[id, address] : this->_servers) {
-        serverList->push_back(address);
+    for (auto const &[datacenter, ips] : this->_datacenters) {
+        serverList->push_back("DATACENTER$" + datacenter);
+        for (auto it = ips.begin(); it != ips.end(); it++) {
+            serverList->push_back(_servers.at(*it));
+        }
     }
 
     return serverList;
@@ -35,7 +38,10 @@ void Client::findProcesses() {
     int id = 0;
     if (addresses["ips"]) {
         for (std::size_t i = 0; i < addresses["ips"].size(); i++) {
-            _servers.insert({id, addresses["ips"][i].as<std::string>()});
+            std::string ip = addresses["ips"][i].as<std::string>();
+            std::string datacenter = getDatacenter(ip);
+            _servers.insert({id, ip});
+            _datacenters.at(datacenter).push_back(id);
             id++;
         }
     }
@@ -54,6 +60,24 @@ void Client::createStub(std::string address) {
     auto args = grpc::ChannelArguments();
     args.SetMaxReceiveMessageSize(1000 * 1024 * 1024);  // 1 GB
     _stub = messages::Client::NewStub(grpc::CreateCustomChannel(address, grpc::InsecureChannelCredentials(), args));
+}
+
+std::string Client::getDatacenter(std::string ip) {
+    messages::DatacenterRequest request;
+    messages::DatacenterReply reply;
+    grpc::ClientContext context;
+
+    createStub(ip + ":" + SERVER_PORT);
+    grpc::Status status = _stub->datacenter(&context, request, &reply);
+
+    if (status.ok()) {
+        return reply.datacenter();
+
+    } else {
+        std::cerr << "-> Failed to get datacenter from " << ip + ":" + SERVER_PORT << "\n" <<
+                  "\tError " << status.error_code() << ": " << status.error_message() << '\n' << std::endl;
+        return "";
+    }
 }
 
 void Client::begin(int duration) {
@@ -101,6 +125,7 @@ std::vector<std::string>* Client::probe(std::string address, int duration) {
 
     int s = 1;
     std::vector<std::string> *probing = new std::vector<std::string>();
+    // Format list to send to Redis
     for (auto const &perSecondValues : *times) {
         probing->push_back("SECOND$" + std::to_string(s));
         for (int64_t const &value : perSecondValues) {
