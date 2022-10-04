@@ -41,6 +41,13 @@ void Client::findProcesses() {
             std::string ip = addresses["ips"][i].as<std::string>();
             std::string datacenter = getDatacenter(ip);
             _servers.insert({id, ip});
+
+            std::cout << "DATACENTER: " << datacenter << std::endl;
+
+            if (!_datacenters.count(datacenter)) {  // no key for the datacenter
+                _datacenters.insert({datacenter, std::vector<int>()});
+            }
+
             _datacenters.at(datacenter).push_back(id);
             id++;
         }
