@@ -48,3 +48,5 @@ spec:
                   fieldPath: spec.nodeName
           securityContext:
             privileged: true
+          nodeSelector:
+            type: S
