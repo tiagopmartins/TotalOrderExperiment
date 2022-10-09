@@ -35,16 +35,15 @@ spec:
           labelSelector:
             matchLabels:
               role: client
-      env:
-        - name: MY_NODE_NAME
-          valueFrom:
-            fieldRef:
-              fieldPath: spec.nodeName
       containers:
         - name: client-container
           image: tiagopm/to-experiment:client
           imagePullPolicy: Always
           env:
+            - name: MY_NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
             - name: LIBC_FATAL_STDERR_
               value: "1"
           securityContext:
