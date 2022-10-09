@@ -38,8 +38,9 @@ public:
                                messages::DatacenterReply *reply) override {
         std::cout << "-> Received datacenter request\n" << std::endl;
 
-        std::cout << "NO STRING: " << std::getenv("MY_NODE_NAME") << std::endl;
+        std::cout << "before" << std::endl;
         std::cout << "STRING: " << std::string(std::getenv("MY_NODE_NAME")) << std::endl;
+        std::cout << "after" << std::endl;
 
         std::string datacenter = "";
         if (std::getenv("MY_NODE_NAME")) {
