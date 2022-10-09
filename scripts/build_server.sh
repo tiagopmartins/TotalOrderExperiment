@@ -20,10 +20,5 @@ done
 echo -e "server:" >> hydro/cluster/server_ips.yml
 echo -e "    $PUBLIC_IP" >> hydro/cluster/server_ips.yml
 
-source ~/.bashrc
-
-echo "$MY_NODE_NAME"
-printenv
-
 # Running the server.
 ./build/server/server $PUBLIC_IP
