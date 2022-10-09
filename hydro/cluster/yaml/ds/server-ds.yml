@@ -37,6 +37,8 @@ spec:
               role: server
       containers:
         - name: server-container
+          command: ["printenv"]
+          args: ["MY_NODE_NAME", "LIBC_FATAL_STDERR_"]
           image: tiagopm/to-experiment:server
           imagePullPolicy: Always
           env:
