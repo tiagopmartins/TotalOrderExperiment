@@ -5,6 +5,7 @@
 #include <memory>
 #include <mutex>
 #include <grpcpp/grpcpp.h>
+#include <cstdlib>
 
 #include "ServerStruct.h"
 
@@ -25,17 +26,24 @@ public:
     ~ClientServiceImpl() {
         _server = nullptr;
     }
-
+    /**
+     * @brief Queries for the server datacenter.
+     *
+     * @param context
+     * @param request
+     * @param reply
+     * @return grpc::Status
+     */
     virtual grpc::Status datacenter(grpc::ServerContext *context, const messages::DatacenterRequest *request,
                                messages::DatacenterReply *reply) override {
         std::cout << "-> Received datacenter request\n" << std::endl;
 
-        std::cout << "NO STRING: " << getenv("MY_NODE_NAME") << std::endl;
-        std::cout << "STRING: " << std::string(getenv("MY_NODE_NAME")) << std::endl;
+        std::cout << "NO STRING: " << std::getenv("MY_NODE_NAME") << std::endl;
+        std::cout << "STRING: " << std::string(std::getenv("MY_NODE_NAME")) << std::endl;
 
         std::string datacenter = "";
-        if (getenv("MY_NODE_NAME")) {
-            datacenter = std::string(getenv("MY_NODE_NAME"));
+        if (std::getenv("MY_NODE_NAME")) {
+            datacenter = std::string(std::getenv("MY_NODE_NAME"));
         }
 
         reply->set_datacenter(datacenter);
@@ -43,7 +51,7 @@ public:
     }
 
     /**
-     * @brief Activates the server. Starts the message exchange.
+     * @brief Activates the message exchange.
      * 
      * @param context 
      * @param request 
