@@ -44,11 +44,6 @@ def add_nodes(client, apps_client, kinds, counts, create=False, prefix=None):
         prev_count = util.get_previous_count(client, kinds[i])
         expected_counts.append(counts[i] + prev_count)
 
-
-    print("LEN KINDS: ", len(kinds))
-    print("CREATE: ", create)
-
-
     for i in range(len(kinds)):
         kind = kinds[i]
 
@@ -62,8 +57,6 @@ def add_nodes(client, apps_client, kinds, counts, create=False, prefix=None):
 
             for container in yml['spec']['template']['spec']['containers']:
                 env = container['env']
-
-                print("ENV: ", env)
 
                 #util.replace_yaml_val(env, 'ROUTING_IPS', route_str)
             yml['spec']['replicas'] = counts[i]
