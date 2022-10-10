@@ -40,12 +40,7 @@ public:
 
         std::string datacenter = "";
         if (std::getenv("MY_NODE_NAME")) {
-            std::cout << "STRING: " << std::string(std::getenv("MY_NODE_NAME")) << std::endl;
             datacenter = std::string(std::getenv("MY_NODE_NAME"));
-        }
-
-        else {
-            std::cout << "null" << std::endl;
         }
 
         reply->set_datacenter(datacenter);
