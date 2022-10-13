@@ -1,15 +1,14 @@
+import sys
 import json
 import matplotlib.pyplot as plt
 
-PROBING_FILE = "probing.json"
-
-def parse():
+def parse(probing_file):
     '''
     Parses the probing results file. Returns a list of lists where each list
     represents a second.
     '''
 
-    with open(PROBING_FILE, 'r') as j:
+    with open(probing_file, 'r') as j:
         contents = json.loads(j.read())
 
     results = []
@@ -20,16 +19,16 @@ def parse():
     
     return results
 
-
 if __name__ == "__main__":
-    results = parse()
+    probing_file = sys.argv[1]
+    results = parse(probing_file)
 
-    fig = plt.figure(figsize=(7, 10))
+    fig = plt.figure(figsize=(15, 6))
     
     ax = fig.add_subplot(111)
     ax.set_title('Stability of the GRID5000 network')
     ax.set_xlabel('Time (s)')
     ax.set_ylabel('Round Trip Time (ms)')
     
-    bp = ax.boxplot(results, showfliers=False)
+    bp = ax.boxplot(results, showfliers=False, widths=0.4)
     plt.savefig('probing.png')
