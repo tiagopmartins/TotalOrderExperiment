@@ -30,8 +30,8 @@ public:
         std::cout << "-> Received probing request" << std::endl;
 
         std::chrono::time_point now = std::chrono::system_clock::now();
-        std::chrono::time_point nowMS = std::chrono::time_point_cast<std::chrono::milliseconds>(now);
-        auto currentTime = std::chrono::duration_cast<std::chrono::milliseconds>(nowMS.time_since_epoch());
+        std::chrono::time_point nowMS = std::chrono::time_point_cast<std::chrono::microseconds>(now);
+        auto currentTime = std::chrono::duration_cast<std::chrono::microseconds>(nowMS.time_since_epoch());
         reply->set_arrival(currentTime.count());
 
         reply->set_code(messages::ReplyCode::OK);

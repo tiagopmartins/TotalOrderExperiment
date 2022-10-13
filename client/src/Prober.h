@@ -21,7 +21,7 @@ private:
 
     std::unique_ptr<messages::Prober::Stub> _stub;
 
-    std::vector<std::vector<int64_t>>* _times;   // Mapping between addresses and times (per second)
+    std::vector<std::vector<double>>* _times;   // Mapping between addresses and times (per second)
 
     /**
      * @brief Finds all the processes alive and stores them.
@@ -38,7 +38,7 @@ public:
         return this->_servers;
     }
 
-    std::vector<std::vector<int64_t>>* times() {
+    std::vector<std::vector<double>>* times() {
         return this->_times;
     }    
 
@@ -48,7 +48,7 @@ public:
      * @param address
      * @return Time it took for the message to arrive at the specified address.
      */
-    int64_t sendProbingMessage(std::string address);
+    double sendProbingMessage(std::string address);
 
     /**
      * @brief Evaluates the stability of the network, to a certain address,
@@ -58,7 +58,7 @@ public:
      * @return Vector divided into sections (vectors) containing the values of the
      * probing during each second.
      */
-    std::vector<std::vector<int64_t>>* stability(std::string address, int duration);
+    std::vector<std::vector<double>>* stability(std::string address, int duration);
 
 };
 
