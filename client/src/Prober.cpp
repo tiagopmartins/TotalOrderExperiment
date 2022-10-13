@@ -44,10 +44,8 @@ double Prober::sendProbingMessage(std::string address) {
 
     if (status.ok()) {
         std::cout << "-> Successfully sent probing message to " + address << '\n' << std::endl;
-        double duration = (((reply.arrival() - currentTime.count()) / 1000) * 100) / 100;   // rounded to 2 decimal places
-
-        std::cout << duration << std::endl;
-
+        // Duration calculation converted to milliseconds, rounded to 2 decimal places
+        double duration = (((double) (reply.arrival() - currentTime.count()) / 1000) * 100) / 100;
         return duration;
 
     } else {
