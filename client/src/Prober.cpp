@@ -40,8 +40,13 @@ int64_t Prober::sendProbingMessage(std::string address) {
     std::chrono::time_point nowMS = std::chrono::time_point_cast<std::chrono::milliseconds>(now);
     auto currentTime = std::chrono::duration_cast<std::chrono::milliseconds>(nowMS.time_since_epoch());
 
+    std::cout << "DIFFERENCE: " << reply.arrival() - currentTime.count() << std::endl;
+
     grpc::Status status = _stub->probing(&context, req, &reply);
     int64_t duration = reply.arrival() - currentTime.count();
+    double duration_double = reply.arrival() - currentTime.count();
+
+    std::cout << "DOUBLE: " << reply.arrival() - currentTime.count() << std::endl;
 
     if (status.ok()) {
         std::cout << "-> Successfully sent probing message to " + address << '\n' << std::endl;
