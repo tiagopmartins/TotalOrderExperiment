@@ -11,7 +11,7 @@
 #include "Prober.h"
 
 Prober::Prober() {
-    _times = new std::vector<std::vector<double>>();
+    _times = new std::vector<std::vector<uint64_t>>();
     findProcesses();
 }
 
@@ -29,7 +29,7 @@ void Prober::createStub(std::string address) {
     _stub = messages::Prober::NewStub(grpc::CreateChannel(address, grpc::InsecureChannelCredentials()));
 }
 
-double Prober::sendProbingMessage(std::string address) {
+uint64_t Prober::sendProbingMessage(std::string address) {
     messages::ProbingRequest req;
     messages::ProbingReply reply;
 
@@ -44,9 +44,7 @@ double Prober::sendProbingMessage(std::string address) {
 
     if (status.ok()) {
         std::cout << "-> Successfully sent probing message to " + address << '\n' << std::endl;
-        // Duration calculation converted to milliseconds, rounded to 2 decimal places
-        double duration = (((double) (reply.arrival() - currentTime.count()) / 1000) * 100) / 100;
-        return duration;
+        return (reply.arrival() - currentTime.count());
 
     } else {
         std::cerr << "-> Failed to send probing message to " + address << '\n' <<
@@ -56,12 +54,12 @@ double Prober::sendProbingMessage(std::string address) {
     }
 }
 
-std::vector<std::vector<double>>* Prober::stability(std::string address, int duration) {
+std::vector<std::vector<uint64_t>>* Prober::stability(std::string address, int duration) {
     this->_times->clear();
 
     int seconds = 0, res = 0;
     for (int s = 0; s < duration; s++) {
-        _times->push_back(std::vector<double>());
+        _times->push_back(std::vector<uint64_t>());
         // Probing for one second at a time
         std::chrono::steady_clock::time_point startSecond = std::chrono::steady_clock::now();
         while (std::chrono::duration_cast<std::chrono::seconds>(std::chrono::steady_clock::now() - startSecond).count() < 1) {

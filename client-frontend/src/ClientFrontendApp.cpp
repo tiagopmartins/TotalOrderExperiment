@@ -105,7 +105,7 @@ void dumpLogs(std::map<std::string, std::vector<std::string>> *logs, std::string
  * @param probingList List of strings containing data.
  *      Form: ["SECOND$1", "value1", "value2", ..., "SECOND$2", ...]
  */
-void readProbing(std::vector<std::vector<std::string>> *probing, std::vector<std::string> *probingList) {
+void readProbing(std::map<int, std::vector<std::string>> *probing, std::vector<std::string> *probingList) {
     int currentSecond = 0;
     for (auto it = probingList->begin(); it != probingList->end(); it++) {
         std::string token;
@@ -113,13 +113,18 @@ void readProbing(std::vector<std::vector<std::string>> *probing, std::vector<std
         getline(ss, token, '$');
 
         if (!token.compare("SECOND")) {
-            probing->push_back(std::vector<std::string>());
             getline(ss, token, ' ');    // get the new second
             currentSecond = std::atoi(token.c_str());
+
+            // Not in the map
+            if (probing->find(currentSecond) == probing->end()) {
+                probing->insert({currentSecond, std::vector<std::string>()});
+            }
+
             continue;
         }
 
-        probing->at(currentSecond - 1).push_back(token);   // push probing value
+        probing->at(currentSecond).push_back(token);   // push probing value
     }
 }
 
@@ -129,28 +134,25 @@ void readProbing(std::vector<std::vector<std::string>> *probing, std::vector<std
  * @param probing Probing vector, divided into vectors representing each second.
  * @param file File to dump the contents into.
  */
-void dumpProbing(std::vector<std::vector<std::string>> *probing, std::string file) {
+void dumpProbing(std::map<int, std::vector<std::string>> *probing, std::string file) {
     std::ofstream output(file + ".txt");
     std::ofstream jsonFile(file + ".json");
     json j;
 
-    int second = 1;
-    for (auto const &perSecondValues : *probing) {
+    for (auto const &[second, perSecondValues] : *probing) {
         output << "-> " << second << "s\n";
         for (std::string const &value : perSecondValues) {
             output << '\t' << value << '\n';
         }
 
         output << '\n';
-        output << "\tAverage: " << averageValue(&(probing->at(second - 1))) << '\n';
-        output << "\tStandard deviation: " << stdDeviation(&(probing->at(second - 1))) << '\n';
+        output << "\tAverage: " << averageValue(&(probing->at(second))) << '\n';
+        output << "\tStandard deviation: " << stdDeviation(&(probing->at(second))) << '\n';
         output << std::endl;
 
         // Send the values into a JSON object
         json jValues(perSecondValues);
         j[std::to_string(second)] = jValues;
-
-        second++;
     }
 
     jsonFile << j << std::endl;
@@ -236,7 +238,7 @@ int main(int argc, char *argv[]) {
     bool consumed = false;
     auto servers = new std::map<std::string, std::vector<std::string>>();
     auto logs = new std::map<std::string, std::vector<std::string>>();
-    auto probing = new std::vector<std::vector<std::string>>();
+    auto probing = new std::map<int, std::vector<std::string>>();
     sw::redis::Redis *redis;
 
     try {

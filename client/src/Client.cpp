@@ -118,7 +118,7 @@ std::vector<std::string>* Client::fetchLog() {
 
 std::vector<std::string>* Client::probe(std::string address, int duration) {
     Prober prober = Prober();
-    std::vector<std::vector<double>> *times = prober.stability(address, duration);
+    std::vector<std::vector<uint64_t>> *times = prober.stability(address, duration);
 
     int s = 1;
     std::vector<std::string> *probing = new std::vector<std::string>();
