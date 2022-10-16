@@ -1,3 +1,4 @@
+#include <iomanip>
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -118,7 +119,7 @@ std::vector<std::string>* Client::fetchLog() {
 
 std::vector<std::string>* Client::probe(std::string address, int duration) {
     Prober prober = Prober();
-    std::vector<std::vector<uint64_t>> *times = prober.stability(address, duration);
+    std::vector<std::vector<double>> *times = prober.stability(address, duration);
 
     int s = 1;
     std::vector<std::string> *probing = new std::vector<std::string>();
@@ -126,7 +127,10 @@ std::vector<std::string>* Client::probe(std::string address, int duration) {
     for (auto const &perSecondValues : *times) {
         probing->push_back("SECOND$" + std::to_string(s));
         for (double const &value : perSecondValues) {
-            probing->push_back(std::to_string(value));
+            // Set value precision
+            std::stringstream valueStream;
+            valueStream << std::fixed << std::setprecision(2) << value;
+            probing->push_back(valueStream.str());
         }
         s++;
     }

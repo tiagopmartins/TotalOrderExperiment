@@ -2,12 +2,13 @@ syntax = "proto3";
 
 package messages;
 
+import "google/protobuf/timestamp.proto";
 import "proto/structs.proto";
 
 message ProbingRequest {}
 
 message ProbingReply {
-    uint64 arrival = 1; // milliseconds
+    google.protobuf.Timestamp arrival = 1;  // milliseconds
     ReplyCode code = 2;
 }
 
