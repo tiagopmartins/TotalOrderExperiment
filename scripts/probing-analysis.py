@@ -14,7 +14,7 @@ def parse(probing_file):
     results = []
     for second in contents:
         # Convert string array to int array
-        values = [int(str_value) for str_value in contents[second]]
+        values = [float(str_value) for str_value in contents[second]]
         results.append(values)
     
     return results
