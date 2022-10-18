@@ -31,16 +31,6 @@ public:
     virtual grpc::Status probing(grpc::ServerContext *context, const messages::ProbingRequest *request,
             messages::ProbingReply *reply) override {
         std::cout << "-> Received probing request\n" << std::endl;
-
-        // Get the current time
-        Timestamp *now = new Timestamp();
-        struct timeval tv;
-        gettimeofday(&tv, nullptr);
-
-        now->set_seconds(tv.tv_sec);
-        now->set_nanos(tv.tv_usec * 1000);
-
-        reply->set_allocated_arrival(now);
         reply->set_code(messages::ReplyCode::OK);
         return grpc::Status::OK;
     }
