@@ -31,7 +31,7 @@ if __name__ == "__main__":
     ax.set_xlabel('Time (s)')
     ax.set_ylabel('Round Trip Time (ms)')
 
-    bp = ax.boxplot(results, showfliers=False, widths=0.4)
+    bp = ax.boxplot(results, showfliers=False, widths=0.4, whis=(5, 95))
     plt.xticks(np.round(np.linspace(0, len(results), num=25), 0), np.round(np.linspace(0, len(results), num=25), 0))
     
     plt.savefig('probing.png')
