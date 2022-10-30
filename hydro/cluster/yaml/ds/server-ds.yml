@@ -40,7 +40,13 @@ spec:
           image: tiagopm/to-experiment:server
           imagePullPolicy: Always
           env:
+            - name: MY_NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
             - name: LIBC_FATAL_STDERR_
               value: "1"
           securityContext:
             privileged: true
+          nodeSelector:
+            type: S

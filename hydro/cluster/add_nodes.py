@@ -44,7 +44,6 @@ def add_nodes(client, apps_client, kinds, counts, create=False, prefix=None):
         prev_count = util.get_previous_count(client, kinds[i])
         expected_counts.append(counts[i] + prev_count)
 
-
     for i in range(len(kinds)):
         kind = kinds[i]
 

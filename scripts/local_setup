@@ -20,7 +20,7 @@ kubectl config set-context --current --namespace=hydro
 rm -rf $HYDRO_HOME
 mkdir $HYDRO_HOME
 cd $HYDRO_HOME
-git clone https://github.com/tiagopmartins/TotalOrderExperiment cluster
+git clone https://github.com/tiagopmartins/TotalOrderExperiment --branch data-analysis-rtt cluster
 
 redis_ip=$(kubectl get nodes -o=jsonpath='{.items[0].status.addresses[0].address}')
 echo "-> Redis IP:" $redis_ip

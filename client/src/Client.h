@@ -61,6 +61,14 @@ public:
     void sendMessage(std::string address, messages::BeginRequest *request);
 
     /**
+     * @brief Gets the datacenter of the specified server.
+     *
+     * @param ip
+     * @return Datacenter name.
+     */
+    std::string getDatacenter(std::string ip);
+
+    /**
      * @brief Begin the message exchange between servers.
      * 
      * @param duration Duration (seconds) the servers are going to exchange messages for.
@@ -79,7 +87,7 @@ public:
      *
      * @param address Address of the server to probe.
      * @param duration Duration of the probing.
-     * @return Vector with the times
+     * @return Vector with the times.
      */
     std::vector<std::string>* probe(std::string address, int duration);
 

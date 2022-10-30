@@ -1,3 +1,4 @@
+#include <iomanip>
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -22,8 +23,11 @@ Client::Client(std::shared_ptr<grpc::Channel> channel) : _stub(messages::Client:
 
 std::vector<std::string>* Client::serverList() {
     std::vector<std::string>* serverList = new std::vector<std::string>();
-    for (auto const &[id, address] : this->_servers) {
-        serverList->push_back(address);
+    for (auto const &[id, ip] : this->_servers) {
+        std::string datacenter = getDatacenter(ip);
+        serverList->push_back(datacenter + "$" + ip);
+
+        std::cout << "DATACENTER: " << datacenter << std::endl;
     }
 
     return serverList;
@@ -54,6 +58,24 @@ void Client::createStub(std::string address) {
     auto args = grpc::ChannelArguments();
     args.SetMaxReceiveMessageSize(1000 * 1024 * 1024);  // 1 GB
     _stub = messages::Client::NewStub(grpc::CreateCustomChannel(address, grpc::InsecureChannelCredentials(), args));
+}
+
+std::string Client::getDatacenter(std::string ip) {
+    messages::DatacenterRequest request;
+    messages::DatacenterReply reply;
+    grpc::ClientContext context;
+
+    createStub(ip + ":" + SERVER_PORT);
+    grpc::Status status = _stub->datacenter(&context, request, &reply);
+
+    if (status.ok()) {
+        return reply.datacenter();
+
+    } else {
+        std::cerr << "-> Failed to get datacenter from " << ip + ":" + SERVER_PORT << "\n" <<
+                  "\tError " << status.error_code() << ": " << status.error_message() << '\n' << std::endl;
+        return "";
+    }
 }
 
 void Client::begin(int duration) {
@@ -97,14 +119,18 @@ std::vector<std::string>* Client::fetchLog() {
 
 std::vector<std::string>* Client::probe(std::string address, int duration) {
     Prober prober = Prober();
-    std::vector<std::vector<int64_t>> *times = prober.stability(address, duration);
+    std::vector<std::vector<double>> *times = prober.stability(address, duration);
 
     int s = 1;
     std::vector<std::string> *probing = new std::vector<std::string>();
+    // Format list to send to Redis
     for (auto const &perSecondValues : *times) {
         probing->push_back("SECOND$" + std::to_string(s));
-        for (int64_t const &value : perSecondValues) {
-            probing->push_back(std::to_string(value));
+        for (double const &value : perSecondValues) {
+            // Set value precision
+            std::stringstream valueStream;
+            valueStream << std::fixed << std::setprecision(2) << value;
+            probing->push_back(valueStream.str());
         }
         s++;
     }

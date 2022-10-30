@@ -1,10 +1,13 @@
 #ifndef PROBER_SERVICE_IMPL_H
 #define PROBER_SERVICE_IMPL_H
 
-#include <chrono>
+#include <ctime>
 #include <grpcpp/grpcpp.h>
+#include <google/protobuf/util/time_util.h>
 
 #include "proto/prober.grpc.pb.h"
+
+using namespace google::protobuf;
 
 /**
  * @brief Prober service implementation.
@@ -27,13 +30,7 @@ public:
      */
     virtual grpc::Status probing(grpc::ServerContext *context, const messages::ProbingRequest *request,
             messages::ProbingReply *reply) override {
-        std::cout << "-> Received probing request" << std::endl;
-
-        std::chrono::time_point now = std::chrono::system_clock::now();
-        std::chrono::time_point nowMS = std::chrono::time_point_cast<std::chrono::milliseconds>(now);
-        auto currentTime = std::chrono::duration_cast<std::chrono::milliseconds>(nowMS.time_since_epoch());
-        reply->set_arrival(currentTime.count());
-
+        std::cout << "-> Received probing request\n" << std::endl;
         reply->set_code(messages::ReplyCode::OK);
         return grpc::Status::OK;
     }

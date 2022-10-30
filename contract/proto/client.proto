@@ -4,6 +4,13 @@ package messages;
 
 import "proto/structs.proto";
 
+// Request for the datacenter name
+message DatacenterRequest {}
+
+message DatacenterReply {
+    string datacenter = 1;
+}
+
 // Request for servers to start messaging
 message BeginRequest {
     // Duration (seconds) the servers will exchange messages for
@@ -24,6 +31,7 @@ message LogReply {
 }
 
 service Client {
+    rpc datacenter(DatacenterRequest) returns (DatacenterReply) {}
     rpc begin (BeginRequest) returns (BeginReply) {}
     rpc log(LogRequest) returns (LogReply) {}
 }

@@ -56,6 +56,16 @@ RUN make
 RUN make install
 WORKDIR /
 
+# Install nlohmann-json
+RUN git clone https://github.com/nlohmann/json.git
+WORKDIR json
+RUN mkdir build
+WORKDIR build
+RUN cmake ..
+RUN make
+RUN make install
+WORKDIR /
+
 # Create and populate Hydro project context
 RUN mkdir /hydro
 ENV HYDRO_HOME /hydro

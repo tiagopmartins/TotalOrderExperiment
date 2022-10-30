@@ -4,14 +4,17 @@
 #include <fstream>
 #include <string>
 #include <grpcpp/grpcpp.h>
+#include <google/protobuf/util/time_util.h>
 
 #include "yaml-cpp/yaml.h"
 #include "proto/prober.grpc.pb.h"
 
 #include "Prober.h"
 
+using namespace google::protobuf;
+
 Prober::Prober() {
-    _times = new std::vector<std::vector<int64_t>>();
+    _times = new std::vector<std::vector<double>>();
     findProcesses();
 }
 
@@ -29,23 +32,23 @@ void Prober::createStub(std::string address) {
     _stub = messages::Prober::NewStub(grpc::CreateChannel(address, grpc::InsecureChannelCredentials()));
 }
 
-int64_t Prober::sendProbingMessage(std::string address) {
+double Prober::sendProbingMessage(std::string address) {
     messages::ProbingRequest req;
     messages::ProbingReply reply;
 
     this->createStub(address + ":" + SERVER_PORT);
     grpc::ClientContext context;
 
-    std::chrono::time_point now = std::chrono::system_clock::now();
-    std::chrono::time_point nowMS = std::chrono::time_point_cast<std::chrono::milliseconds>(now);
-    auto currentTime = std::chrono::duration_cast<std::chrono::milliseconds>(nowMS.time_since_epoch());
-
+    auto start = std::chrono::steady_clock::now();
     grpc::Status status = _stub->probing(&context, req, &reply);
-    int64_t duration = reply.arrival() - currentTime.count();
+    auto end = std::chrono::steady_clock::now();
 
     if (status.ok()) {
         std::cout << "-> Successfully sent probing message to " + address << '\n' << std::endl;
-        return duration;
+
+        // Return the value converted to milliseconds
+        std::chrono::duration<double, std::milli> rtt = end - start;
+        return rtt.count();
 
     } else {
         std::cerr << "-> Failed to send probing message to " + address << '\n' <<
@@ -55,12 +58,12 @@ int64_t Prober::sendProbingMessage(std::string address) {
     }
 }
 
-std::vector<std::vector<int64_t>>* Prober::stability(std::string address, int duration) {
+std::vector<std::vector<double>>* Prober::stability(std::string address, int duration) {
     this->_times->clear();
 
-    int seconds = 0, res = 0;
+    double res = 0;
     for (int s = 0; s < duration; s++) {
-        _times->push_back(std::vector<int64_t>());
+        _times->push_back(std::vector<double>());
         // Probing for one second at a time
         std::chrono::steady_clock::time_point startSecond = std::chrono::steady_clock::now();
         while (std::chrono::duration_cast<std::chrono::seconds>(std::chrono::steady_clock::now() - startSecond).count() < 1) {
