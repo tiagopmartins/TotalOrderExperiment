@@ -5,51 +5,18 @@
 #include <map>
 
 #include <sw/redis++/redis++.h>
-#include <nlohmann/json.hpp>
 
-using json = nlohmann::json;
+#include "Commands.h"
 
-const int EXPECTED_ARGS_N = 2;      // Expected number of arguments passed to the program
+// Expected number of arguments passed to the program
+const int EXPECTED_ARGS_N = 2;
+const int EXPECTED_ARGS_N_FILE = 4;
 
 const int REDIS_EXTERNAL_PORT = 30000;
 //const int REDIS_EXTERNAL_PORT = 6379;
 
 
-// STATISTICS
-
-/**
- * Calculates the average value of a vector.
- *
- * @param vec
- * @return
- */
-double averageValue(std::vector<std::string> *vec) {
-    double sum = 0;
-    for (std::string val : *vec) {
-        sum += strtol(val.c_str(), nullptr, 10);
-    }
-
-    return sum / vec->size();
-}
-
-/**
- * Calculates the standard deviation of a vector.
- *
- * @param vec
- * @return
- */
-double stdDeviation(std::vector<std::string> *vec) {
-    int average = averageValue(vec);
-    double sum = 0;
-    for (std::string val : *vec) {
-        sum += pow((strtol(val.c_str(), nullptr, 10) - average), 2);
-    }
-
-    return sqrt(sum / vec->size());
-}
-
-
-// ------- DATA LOGS
+// ------- INPUT OUTPUT
 
 /**
  * @brief Reads the logs list containing the logs for each server divided by its
@@ -76,25 +43,6 @@ void readLogs(std::map<std::string, std::vector<std::string>> *logs, std::vector
         logs->at(currentServer).push_back(token);   // push log info
     }
 }
-
-/**
- * @brief Prints the logs and statistics for each server in a human-friendly way.
- *
- * @param logs Map between the server address and a vector of logs for it.
- * @param file File to dump the contents into.
- */
-void dumpLogs(std::map<std::string, std::vector<std::string>> *logs, std::string file) {
-    std::ofstream output(file + ".txt");
-    for (auto const &[address, vector] : *logs) {
-        output << "-> " << address << '\n';
-        for (std::string const &value : vector) {
-            output << '\t' << value << '\n';
-        }
-    }
-}
-
-
-// ------- PROBING
 
 /**
  * @brief Reads the probing results for each server divided by its respective
@@ -127,39 +75,6 @@ void readProbing(std::map<int, std::vector<std::string>> *probing, std::vector<s
         probing->at(currentSecond).push_back(token);   // push probing value
     }
 }
-
-/**
- * Dumps the probing results from the vector given as input into the specified file.
- *
- * @param probing Probing vector, divided into vectors representing each second.
- * @param file File to dump the contents into.
- */
-void dumpProbing(std::map<int, std::vector<std::string>> *probing, std::string file) {
-    std::ofstream output(file + ".txt");
-    std::ofstream jsonFile(file + ".json");
-    json j;
-
-    for (auto const &[second, perSecondValues] : *probing) {
-        output << "-> " << second << "s\n";
-        for (std::string const &value : perSecondValues) {
-            output << '\t' << value << '\n';
-        }
-
-        output << '\n';
-        output << "\tAverage: " << averageValue(&(probing->at(second))) << '\n';
-        output << "\tStandard deviation: " << stdDeviation(&(probing->at(second))) << '\n';
-        output << std::endl;
-
-        // Send the values into a JSON object
-        json jValues(perSecondValues);
-        j[std::to_string(second)] = jValues;
-    }
-
-    jsonFile << j << std::endl;
-}
-
-
-// ------- SERVERS
 
 /**
  * @brief Reads the server list containing the addresses of the servers for each
@@ -202,25 +117,32 @@ void printServers(std::map<std::string, std::vector<std::string>> *servers) {
 }
 
 
+// ------- COMMANDS
+
+
+
+
 /**
- * @brief Waits for a subscriber to consume a message.
+ * @brief Executes the commands specified in the file.
  *
- * @param sub
- * @param consumed Flag to know if the output was consumed.
+ * @param file File name.
  */
-void waitConsume(sw::redis::Subscriber *sub, bool *consumed) {
-    do {
-        try {
-            sub->consume();
+ void executeFile(std::string file) {
+     std::ifstream commands(file);
 
-        } catch (const sw::redis::Error &err) {
-            std::cerr << "Redis error: " << err.what() << std::endl;
-        }
+     if (commands.is_open()) {
+         std::string cmd;
+         while (commands.good()) {
+            commands >> cmd;
+            if (cmd == "probe") {
 
-    } while (!(*consumed));
+            }
+         }
 
-    *consumed = false;  // reset flag
-}
+     } else {
+         std::cerr << "No commands file found with the given name" << std::endl;
+     }
+ }
 
 
 /**
@@ -230,9 +152,14 @@ void waitConsume(sw::redis::Subscriber *sub, bool *consumed) {
  * @return int 
  */
 int main(int argc, char *argv[]) {
-    if (argc != EXPECTED_ARGS_N) {
-        std::cerr << "Invalid number of arguments. Please, specify the Redis address." << std::endl;
+    if (argc != EXPECTED_ARGS_N && argc != EXPECTED_ARGS_N_FILE) {
+        std::cerr << "Invalid number of arguments. Please, specify the Redis address and optionally a file with commands to execute." << std::endl;
         return -1;
+    }
+
+    // Execute commands inside the file passed as input
+    if (argc == EXPECTED_ARGS_N_FILE) {
+        executeFile(argv[EXPECTED_ARGS_N_FILE - 1]);
     }
 
     bool consumed = false;
@@ -283,8 +210,7 @@ int main(int argc, char *argv[]) {
 
         if (!cmd.compare("begin")) {
             std::cin >> duration;
-            redis->publish("to-exp", "begin " + duration);
-            std::cout << std::endl;
+            begin(redis, duration);
         
         } else if (!cmd.compare("dump")) {
             std::cin >> target;
@@ -293,31 +219,21 @@ int main(int argc, char *argv[]) {
 
             } else if (!target.compare("logs")) {
                 dumpLogs(logs, target);
+
+            } else {
+                std::cerr << "Invalid probing target." << std::endl;
             }
 
-            std::cout << "Successfully dumped contents into file.\n" << std::endl;
-
         } else if (!cmd.compare("fetch")) {
-            redis->publish("to-exp", "fetch");
-            waitConsume(&sub, &consumed);
-            std::cout << "Successfully fetched messages.\n" << std::endl;
+            fetch(redis, &sub, &consumed);
 
         } else if (!cmd.compare("probe")) {
             std::cin >> address;
             std::cin >> duration;
-
-            std::string msg = "probe ";
-            msg.append(address);
-            msg.append(" ");
-            msg.append(duration);
-
-            redis->publish("to-exp", msg);
-            waitConsume(&sub, &consumed);
-            std::cout << "Successfully obtained probing results.\n" << std::endl;
+            probe(redis, &sub, &consumed, address, duration);
 
         } else if (!cmd.compare("get-servers")) {
-            redis->publish("to-exp", "get-servers");
-            waitConsume(&sub, &consumed);
+            getServers(redis, &sub, &consumed);
 
         } else if (!cmd.compare("exit")) {
             std::cout << "Exiting :)" << std::endl;

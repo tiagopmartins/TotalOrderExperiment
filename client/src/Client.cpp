@@ -25,9 +25,7 @@ std::vector<std::string>* Client::serverList() {
     std::vector<std::string>* serverList = new std::vector<std::string>();
     for (auto const &[id, ip] : this->_servers) {
         std::string datacenter = getDatacenter(ip);
-        serverList->push_back(datacenter + "$" + ip);
-
-        std::cout << "DATACENTER: " << datacenter << std::endl;
+        serverList->push_back(datacenter + "$" + ip);;
     }
 
     return serverList;
