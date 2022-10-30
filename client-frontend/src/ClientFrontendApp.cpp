@@ -10,13 +10,11 @@
 
 // Expected number of arguments passed to the program
 const int EXPECTED_ARGS_N = 2;
-const int EXPECTED_ARGS_N_FILE = 4;
+const int EXPECTED_ARGS_N_FILE = 3;
 
 const int REDIS_EXTERNAL_PORT = 30000;
 //const int REDIS_EXTERNAL_PORT = 6379;
 
-
-// ------- INPUT OUTPUT
 
 /**
  * @brief Reads the logs list containing the logs for each server divided by its
@@ -116,33 +114,131 @@ void printServers(std::map<std::string, std::vector<std::string>> *servers) {
     std::cout << std::endl;
 }
 
+/**
+ * Parses the specified command to be called.
+ *
+ * @param cmd Command to execute.
+ * @param redis
+ * @param sub Redis subscriber.
+ * @param consumed Pointer to a flag to know if the message was already
+ * consumed by the subscriber.
+ * @param logs Pointer to a vector containing the logs.
+ * @param probing Pointer to a vector containing the probing results.
+ * @return true if the program exited.
+ */
+bool executeCall(std::string cmd, sw::redis::Redis *redis, sw::redis::Subscriber *sub,
+                 bool *consumed, std::map<std::string, std::vector<std::string>> *logs,
+                 std::map<int, std::vector<std::string>> *probing) {
+    std::string address, duration, target;
 
-// ------- COMMANDS
+    if (cmd == "begin") {
+        std::cin >> duration;
+        begin(redis, duration);
 
+    } else if (cmd == "dump") {
+        std::cin >> target;
+        if (target == "probing") {
+            dumpProbing(probing, target);
 
+        } else if (target == "logs") {
+            dumpLogs(logs, target);
 
+        } else {
+            std::cerr << "Invalid probing target.\n" << std::endl;
+        }
+
+    } else if (cmd == "fetch") {
+        fetch(redis, sub, consumed);
+
+    } else if (cmd == "probe") {
+        std::cin >> address;
+        std::cin >> duration;
+        probe(redis, sub, consumed, address, duration);
+
+    } else if (cmd == "get-servers") {
+        getServers(redis, sub, consumed);
+
+    } else if (cmd == "exit") {
+        std::cout << "Exiting :)" << std::endl;
+        return true;
+
+    } else {
+        std::cerr << "Invalid command specified.\n" << std::endl;
+    }
+
+    return false;
+}
 
 /**
  * @brief Executes the commands specified in the file.
  *
  * @param file File name.
+ * @param redis
+ * @param sub Redis subscriber.
+ * @param logs Pointer to a vector containing the logs.
+ * @param probing Pointer to a vector containing the probing results.
+ * @param consumed Pointer to a flag to know if the message was already
+ * consumed by the subscriber.
+ * @return true if the program exited.
  */
- void executeFile(std::string file) {
-     std::ifstream commands(file);
+bool executeFile(std::string file, sw::redis::Redis *redis, sw::redis::Subscriber *sub,
+                 bool *consumed, std::map<std::string, std::vector<std::string>> *logs,
+                 std::map<int, std::vector<std::string>> *probing) {
+    std::ifstream commands(file);
 
-     if (commands.is_open()) {
-         std::string cmd;
-         while (commands.good()) {
-            commands >> cmd;
-            if (cmd == "probe") {
+    if (commands.is_open()) {
+        while (!commands.eof()) {
+            std::string line, operation;
+            std::string address, duration, target;
 
+            getline(commands, line);
+            std::stringstream command(line);
+            command >> operation;
+
+            std::cout << line << std::endl;
+
+            if (operation == "begin") {
+                command >> duration;
+                begin(redis, duration);
+
+            } else if (operation == "dump") {
+                command >> target;
+                if (target == "probing") {
+                    dumpProbing(probing, target);
+
+                } else if (target == "logs") {
+                    dumpLogs(logs, target);
+
+                } else {
+                    std::cerr << "Invalid probing target.\n" << std::endl;
+                }
+
+            } else if (operation == "fetch") {
+                fetch(redis, sub, consumed);
+
+            } else if (operation == "probe") {
+                command >> address;
+                command >> duration;
+                probe(redis, sub, consumed, address, duration);
+
+            } else if (operation == "get-servers") {
+                getServers(redis, sub, consumed);
+
+            } else if (operation == "exit") {
+                std::cout << "Exiting :)" << std::endl;
+                return true;
+
+            } else {
+                std::cerr << "Invalid command specified.\n" << std::endl;
             }
-         }
+        }
 
-     } else {
-         std::cerr << "No commands file found with the given name" << std::endl;
-     }
- }
+    } else {
+        std::cerr << "No commands file found with the given name.\n" << std::endl;
+    }
+
+    return false;
+}
 
 
 /**
@@ -155,11 +251,6 @@ int main(int argc, char *argv[]) {
     if (argc != EXPECTED_ARGS_N && argc != EXPECTED_ARGS_N_FILE) {
         std::cerr << "Invalid number of arguments. Please, specify the Redis address and optionally a file with commands to execute." << std::endl;
         return -1;
-    }
-
-    // Execute commands inside the file passed as input
-    if (argc == EXPECTED_ARGS_N_FILE) {
-        executeFile(argv[EXPECTED_ARGS_N_FILE - 1]);
     }
 
     bool consumed = false;
@@ -175,7 +266,7 @@ int main(int argc, char *argv[]) {
         redis = new sw::redis::Redis(config);
 
     } catch (const std::exception &e) {
-        std::cout << "Error while starting up Redis: " << e.what() << std::endl;
+        std::cout << "Error while starting up Redis: " << e.what() << '\n' << std::endl;
     }
 
     // Redis subscriber
@@ -204,46 +295,31 @@ int main(int argc, char *argv[]) {
         consumed = true;
     });
 
-    while (true) {
-        std::string cmd, address, duration, target;
-        std::cin >> cmd;
-
-        if (!cmd.compare("begin")) {
-            std::cin >> duration;
-            begin(redis, duration);
-        
-        } else if (!cmd.compare("dump")) {
-            std::cin >> target;
-            if (!target.compare("probing")) {
-                dumpProbing(probing, target);
-
-            } else if (!target.compare("logs")) {
-                dumpLogs(logs, target);
-
-            } else {
-                std::cerr << "Invalid probing target." << std::endl;
-            }
-
-        } else if (!cmd.compare("fetch")) {
-            fetch(redis, &sub, &consumed);
-
-        } else if (!cmd.compare("probe")) {
-            std::cin >> address;
-            std::cin >> duration;
-            probe(redis, &sub, &consumed, address, duration);
-
-        } else if (!cmd.compare("get-servers")) {
-            getServers(redis, &sub, &consumed);
-
-        } else if (!cmd.compare("exit")) {
-            std::cout << "Exiting :)" << std::endl;
-            delete redis;
+    // Execute commands inside the file passed as input
+    if (argc == EXPECTED_ARGS_N_FILE) {
+        // Execute call and check if the program exited
+        if (executeFile(argv[EXPECTED_ARGS_N_FILE - 1], redis, &sub, &consumed, logs, probing)) {
+            delete servers;
             delete logs;
             delete probing;
-            return 0;
 
-        } else {
-            std::cerr << "Invalid command specified.\n" << std::endl;
+            return 0;
         }
     }
+
+    while (true) {
+        std::string cmd;
+        std::cin >> cmd;
+
+        // Execute call and check if the program exited
+        if(executeCall(cmd, redis, &sub, &consumed, logs, probing)) {
+            delete servers;
+            delete logs;
+            delete probing;
+
+            return 0;
+        }
+    }
+
+    return 0;
 }

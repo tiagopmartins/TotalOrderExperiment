@@ -30,8 +30,8 @@ void fetch(sw::redis::Redis *redis, sw::redis::Subscriber *sub, bool *consumed);
  * @param address Address to send messages to.
  * @param duration Duration of the probing operation.
  * @param sub Redis subscriber.
- * @param consumed Pointer to a consumed flag to know if the message was
- * already consumed by the subscriber.
+ * @param consumed Pointer to a consumed flag to know if the message was already
+ * consumed by the subscriber.
  */
 void probe(sw::redis::Redis *redis, sw::redis::Subscriber *sub, bool *consumed, std::string address, std::string duration);
 
