@@ -154,6 +154,7 @@ bool executeCall(std::string cmd, sw::redis::Redis *redis, sw::redis::Subscriber
         std::cin >> address;
         std::cin >> duration;
         probe(redis, sub, consumed, address, duration);
+        dumpProbing(probing, "probing_" + address);
 
     } else if (cmd == "get-servers") {
         getServers(redis, sub, consumed);
