@@ -94,11 +94,19 @@ public:
         std::cout << "-> Received log request\n" << std::endl;
 
         // Filling reply with the log information
-        std::shared_lock<std::shared_mutex> lock(*(_server->logMutex()));
-        for (std::string msg : _server->log()) {
+        std::shared_lock <std::shared_mutex> lock(*(_server->logMutex()));
+        for (std::string msg: _server->log()) {
             reply->add_log(msg);
         }
         lock.unlock();
+
+        // Warn about being the sequencer or not
+        if (this->_server->seq() == this->_server->host()) {
+            reply->set_sequencer(true);
+
+        } else {
+            reply->set_sequencer(false);
+        }
 
         reply->set_address(_server->address());
         reply->set_code(messages::ReplyCode::OK);
