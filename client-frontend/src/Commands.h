@@ -72,7 +72,7 @@ void waitConsume(sw::redis::Subscriber *sub, bool *consumed);
 
 /**
  * @brief Measures the accuracy of the total order done by each server.
- * The orders obtained by the servers are compared to the sequencer's order.
+ * The orders obtained by the servers are compared to the sequencer's order using sub-sequences.
  *
  * @param logs Map between the server address and a vector of logs for it.
  * @param sequencer Sequencer's address amongst the servers.
@@ -80,5 +80,8 @@ void waitConsume(sw::redis::Subscriber *sub, bool *consumed);
  * @return Mapping between addresses and accuracies.
  */
 std::map<std::string, float>* toAccuracy(std::map<std::string, std::vector<std::string>> *logs, std::string *sequencer);
+
+// -------------- AUXILIARY
+
 
 #endif //TOTAL_ORDER_EXPERIMENT_COMMANDS_H

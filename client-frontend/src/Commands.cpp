@@ -92,14 +92,35 @@ std::map<std::string, float>* toAccuracy(std::map<std::string, std::vector<std::
     auto accuracy = new std::map<std::string, float>();
 
     for (auto &[address, log] : *logs) {
-        long serverAcc = 0;
-        for (ssize_t i = 0; i < log.size(); i++) {
-            // Match between orders
-            if (log.at(i) == seqOrder->at(i)) {
-                serverAcc++;
+        long serverAcc = 0; // Sum of all the subsequences found
+        std::string subSequence = "";
+
+        ssize_t i = 0;
+        while (i < log.size()) {
+            // Search for the message in the sequencer's log
+            ssize_t s = 0;
+            for (; s < seqOrder->size(); s++) {
+                if (seqOrder->at(s) == log[i]) {
+                    break;
+                }
             }
+
+            // Compare sub-sequence
+            while (i < log.size() && s < seqOrder->size() && log[i] == seqOrder->at(s)) {
+                subSequence.append(log[i]);
+                i++;
+                s++;
+            }
+
+            // First message in the correct position or a sequence with size greater than one
+            if (subSequence.size() > 1 || subSequence == log[0]) {
+                serverAcc += subSequence.size();
+            }
+
+            subSequence.clear();
         }
-        accuracy->insert({address, (serverAcc / log.size()) * 100});
+
+        accuracy->insert({address, ((float) serverAcc / log.size()) * 100});
     }
 
     return accuracy;
