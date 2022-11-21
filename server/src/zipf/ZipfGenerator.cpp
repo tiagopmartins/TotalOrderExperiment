@@ -9,11 +9,11 @@
 #include <math.h>               // Needed for pow()
 #include <assert.h>             // Needed for assert() macro
 #include <random>               // Needed for normal_distribution class
-#include <iostream>
+#include <algorithm>            // Needed for shuffle()
 
 
 ZipfGenerator::ZipfGenerator(double _alpha = 1.0, int _n = 1000) : alpha(_alpha), n(_n) {
-    sum_probs = static_cast<double*>(malloc((n + 1) * sizeof(*sum_probs)));
+    sum_probs = new std::vector<double>(n + 1);
     // Null alpha is equivalent to a normal distribution
     if (alpha > 0) {
         zipf();
@@ -21,6 +21,13 @@ ZipfGenerator::ZipfGenerator(double _alpha = 1.0, int _n = 1000) : alpha(_alpha)
     } else {
         normal(0, 1);
     }
+
+    // Shuffle keys for a better load-balancing
+    std::shuffle(sum_probs->begin(), sum_probs->end(), std::default_random_engine(rand_val(0)));
+}
+
+ZipfGenerator::~ZipfGenerator() {
+    delete sum_probs;
 }
 
 void ZipfGenerator::zipf() {
@@ -30,21 +37,19 @@ void ZipfGenerator::zipf() {
     }
     c = 1.0 / c;
 
-    sum_probs[0] = 0;
+    sum_probs->at(0) = 0;
     for (int i = 1; i <= n; i++) {
-        sum_probs[i] = sum_probs[i - 1] + c / pow((double) i, alpha);
+        sum_probs->at(i) = sum_probs->at(i - 1) + c / pow((double) i, alpha);
     }
 }
 
 void ZipfGenerator::normal(float mean, float stddev) {
-    sum_probs[0] = 0;
+    sum_probs->at(0) = 0;
     for (int i = 1; i <= n; i++) {
         //float pdf = 1 / (stddev * sqrt(2 * M_PI)) * exp(-0.5 * pow((i - mean) / stddev, 2));
-        //sum_probs[i] = sum_probs[i - 1] + pdf;
+        //sum_probs->at(i) = sum_probs->at(i - 1) + pdf;
 
-        sum_probs[i] = 0.5 * (1 + erf(i / sqrt(2)));
-
-        std::cout << "prob: " << sum_probs[i] << std::endl;
+        sum_probs->at(i) = 0.5 * (1 + erf(i / sqrt(2)));
     }
 }
 
@@ -60,11 +65,11 @@ int ZipfGenerator::next() {
     low = 1, high = n;
     do {
         mid = floor((low + high) / 2);
-        if (sum_probs[mid] >= z && sum_probs[mid - 1] < z) {
+        if (sum_probs->at(mid) >= z && sum_probs->at(mid - 1) < z) {
             zipf_value = mid;
             break;
 
-        } else if (sum_probs[mid] >= z) {
+        } else if (sum_probs->at(mid) >= z) {
             high = mid - 1;
 
         } else {

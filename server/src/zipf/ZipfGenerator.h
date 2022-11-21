@@ -9,16 +9,19 @@
 #define ZIPF_GENERATOR_H
 
 #include "LoadGeneratorInterface.h"
+#include <vector>
 
 
 class ZipfGenerator : public LoadGeneratorInterface {
 
 public:
-    double *sum_probs;
+    std::vector<double> *sum_probs;
     double alpha;
     int n;
 
     ZipfGenerator(double _alpha, int _n);
+
+    ~ZipfGenerator();
 
     /**
      * Cumulative function of a discrete zipf distribution.
