@@ -8,6 +8,7 @@
 #include "ClientServiceImpl.h"
 #include "MessageServiceImpl.h"
 #include "ProberServiceImpl.h"
+#include "zipf/ZipfGenerator.h"
 
 #include "proto/messages.grpc.pb.h"
 
