@@ -112,8 +112,9 @@ std::map<std::string, float>* toAccuracy(std::map<std::string, std::vector<std::
                 s++;
             }
 
-            // First message in the correct position or a sequence with size greater than one
-            if (subSequence.size() > 1 || subSequence == log[0]) {
+            // First/last message in the correct position or a sequence with size greater than one
+            // For a subsequence to count, it needs to be at the correct position or after it
+            if ((subSequence.size() > 1 && i >= s) || subSequence == log[0] || subSequence == log[log.size() - 1]) {
                 serverAcc += subSequence.size();
             }
 

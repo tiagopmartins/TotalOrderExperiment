@@ -81,7 +81,4 @@ void waitConsume(sw::redis::Subscriber *sub, bool *consumed);
  */
 std::map<std::string, float>* toAccuracy(std::map<std::string, std::vector<std::string>> *logs, std::string *sequencer);
 
-// -------------- AUXILIARY
-
-
 #endif //TOTAL_ORDER_EXPERIMENT_COMMANDS_H
