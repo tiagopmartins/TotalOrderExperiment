@@ -46,6 +46,8 @@ int main(int argc, char *argv[]) {
     }
 
     std::string host(argv[1]);
+
+    ZipfGenerator zipf = ZipfGenerator(0, 10);
     
     runServer(host);
 

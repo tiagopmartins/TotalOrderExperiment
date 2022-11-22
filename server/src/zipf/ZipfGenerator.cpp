@@ -11,6 +11,8 @@
 #include <random>               // Needed for normal_distribution class
 #include <algorithm>            // Needed for shuffle()
 
+#include <iostream>
+
 
 ZipfGenerator::ZipfGenerator(double _alpha = 1.0, int _n = 1000) : alpha(_alpha), n(_n) {
     sum_probs = new std::vector<double>(n + 1);
@@ -19,7 +21,7 @@ ZipfGenerator::ZipfGenerator(double _alpha = 1.0, int _n = 1000) : alpha(_alpha)
         zipf();
 
     } else {
-        normal(0, 1);
+        normal(mean(n), stdDeviationSquared(n));
     }
 
     // Shuffle keys for a better load-balancing
@@ -43,13 +45,18 @@ void ZipfGenerator::zipf() {
     }
 }
 
-void ZipfGenerator::normal(float mean, float stddev) {
+void ZipfGenerator::normal(double mean, double stddev_sqrd) {
     sum_probs->at(0) = 0;
     for (int i = 1; i <= n; i++) {
-        //float pdf = 1 / (stddev * sqrt(2 * M_PI)) * exp(-0.5 * pow((i - mean) / stddev, 2));
-        //sum_probs->at(i) = sum_probs->at(i - 1) + pdf;
+        //sum_probs->at(i) = 0.5 * (1 + erf((i - mean) / sqrt(2 * stddev_sqrd)));
 
-        sum_probs->at(i) = 0.5 * (1 + erf(i / sqrt(2)));
+        double pdf = 1 / (sqrt(2 * M_PI * stddev_sqrd)) * exp(-0.5 * pow((i - mean) / sqrt(stddev_sqrd), 2));
+        sum_probs->at(i) = sum_probs->at(i - 1) + pdf;
+
+        // Poisson approximation
+        //sum_probs->at(i) = sum_probs->at(i - 1) + (pow(rate, i) * exp(-n)) / factorial(i);
+
+        std::cout << i << ": " << sum_probs->at(i) << std::endl;
     }
 }
 
@@ -81,4 +88,24 @@ int ZipfGenerator::next() {
     assert((zipf_value >= 1) && (zipf_value <= n));
 
     return (zipf_value - 1);
+}
+
+double ZipfGenerator::mean(int n) {
+    return (1 + n) / 2.0;
+}
+
+double ZipfGenerator::stdDeviationSquared(int n) {
+    double m = mean(n), sum = 0;
+    for (double i = 1; i <= n; i++) {
+        sum += pow((i - m), 2);
+    }
+    return sum / n;
+}
+
+long ZipfGenerator::factorial(int n) {
+    long value = 1;
+    for (int i = n; i > 0; i--) {
+        value *= i;
+    }
+    return value;
 }

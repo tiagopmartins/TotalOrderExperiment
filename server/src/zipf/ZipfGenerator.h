@@ -24,16 +24,44 @@ public:
     ~ZipfGenerator();
 
     /**
-     * Cumulative function of a discrete zipf distribution.
+     * Cumulative function of a discrete Zipf distribution.
      */
     void zipf();
 
     /**
-     * Cumulative function of a discrete normal distribution.
+     * Cumulative function of a normal distribution.
+     *
+     * @param mean
+     * @param stddev_sqrd Squared standard deviation.
      */
-    void normal(float mean, float stddev);
+    void normal(double mean, double stddev_sqrd);
 
     int next();
+
+private:
+    /**
+     * Mean of n consecutive numbers.
+     *
+     * @param n
+     * @return
+     */
+    double mean(int n);
+
+    /**
+     * Squared standard deviation of n consecutive numbers.
+     *
+     * @param n
+     * @return
+     */
+    double stdDeviationSquared(int n);
+
+    /**
+     * Factorial function.
+     *
+     * @param n
+     * @return
+     */
+     long factorial(int n);
 
 };
 
