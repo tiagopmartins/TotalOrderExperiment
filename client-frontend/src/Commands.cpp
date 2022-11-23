@@ -6,9 +6,9 @@
 
 using json = nlohmann::json;
 
-void begin(sw::redis::Redis *redis, std::string duration) {
-    redis->publish("to-exp", "begin " + duration);
-    std::cout << "Successfully sent begin signal.\n" << std::endl;
+void execute(sw::redis::Redis *redis) {
+    redis->publish("to-exp", "execute");
+    std::cout << "Successfully sent execute request.\n" << std::endl;
 }
 
 void fetch(sw::redis::Redis *redis, sw::redis::Subscriber *sub, bool *consumed) {

@@ -5,12 +5,11 @@
 #include <sw/redis++/redis++.h>
 
 /**
- * Sends a begin signal through Redis for the message exchange to start.
+ * Sends a transaction execute request.
  *
  * @param redis
- * @param duration
  */
-void begin(sw::redis::Redis *redis, std::string duration);
+void execute(sw::redis::Redis *redis);
 
 /**
  * Sends a fetch signal through Redis to get the results from the "begin".

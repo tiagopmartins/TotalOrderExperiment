@@ -9,7 +9,7 @@
 #include "ServerStruct.h"
 
 ServerStruct::ServerStruct(std::string host, std::vector<double>* zipfProbs) : Sequencer(),
-        _host(host), _msgCounter(0) {
+        _host(host) {
     findProcesses();
     selectProbabilities(zipfProbs);
     this->_seq = electLeader();
@@ -36,9 +36,9 @@ void ServerStruct::findProcesses() {
     }
 }
 
-void ServerStruct::insertLog(int id, int msgID) {
+void ServerStruct::insertLog(int clientId, long msgID) {
     std::lock_guard<std::shared_mutex> lockGuard(_logMutex);
-    this->_log.push_back(std::to_string(id) + " " + std::to_string(msgID));
+    this->_log.push_back(std::to_string(clientId) + " " + std::to_string(msgID));
 }
 
 void ServerStruct::createStub(std::string address) {
@@ -51,18 +51,20 @@ std::string ServerStruct::electLeader() {
 
 void ServerStruct::selectProbabilities(std::vector<double>* zipfProbs) {
     long keyN = zipfProbs->size(), partitionSize = keyN / this->servers().size();
-    std::vector<double>* partitionProbs = new std::vector<double>();
+    std::map<long, double>* partitionProbs = new std::map<long, double>();
 
     size_t start = partitionSize * this->id();
     size_t end = partitionSize * (this->id() + 1);
     for (size_t i = start; i < end; i++) {
-        partitionProbs->push_back(zipfProbs->at(i));
+        partitionProbs->insert({i, zipfProbs->at(i)});
     }
 
     // If there is a last unattributed value, attribute it to the last partition
     if (zipfProbs->size() % 2 == 1 && this->id() == (this->servers().size() - 1)) {
-        partitionProbs->push_back(zipfProbs->at(zipfProbs->size() - 1));
+        partitionProbs->insert({zipfProbs->size() - 1, zipfProbs->at(zipfProbs->size() - 1)});
     }
+
+    this->_zipfProbs = partitionProbs;
 }
 
 void ServerStruct::sendMessage(std::string address, messages::MessageRequest request,

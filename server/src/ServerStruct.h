@@ -26,21 +26,17 @@ const std::string SERVER_PORT = "50001";
 class ServerStruct : public Sequencer {
 
 private:
+    int _id;
+    std::string _host;
     std::map<int, std::string> _servers;
     std::string _seq;
 
-    int _id;
-
     std::unique_ptr<messages::Messenger::Stub> _stub;
 
-    std::string _host;
-
-    std::shared_mutex _msgCounterMutex, _logMutex;
-
-    int _msgCounter;
+    std::shared_mutex _logMutex;
     std::vector<std::string> _log;      // Message log
 
-    std::vector<double>* _zipfProbs;
+    std::map<long, double>* _zipfProbs;
 
     //std::map<std::pair<int, std::string>> messages; // Mapping between sequence numbers and messages
 
@@ -86,21 +82,8 @@ public:
         this->_host = host;
     }
 
-    int msgCounter() {
-        return this->_msgCounter;
-    }
-
-    void incrementMsgCounter() {
-        std::lock_guard<std::shared_mutex> lockGuard(_msgCounterMutex);
-        this->_msgCounter++;
-    }
-
     std::vector<std::string> log() {;
         return this->_log;
-    }
-
-    std::shared_mutex* msgCounterMutex() {
-        return &this->_msgCounterMutex;
     }
 
     std::shared_mutex* logMutex() {
@@ -116,10 +99,10 @@ public:
     /**
      * @brief Adds to the log the register with the specified format.
      * 
-     * @param id ID of the server.
+     * @param clientId ID of the client issuing the message.
      * @param msgID ID of the message from the server.
      */
-    void insertLog(int id, int msgID);
+    void insertLog(int clientId, long msgID);
 
     void createStub(std::string address);
 

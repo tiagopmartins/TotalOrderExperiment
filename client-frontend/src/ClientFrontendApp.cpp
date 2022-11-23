@@ -141,9 +141,8 @@ bool executeCall(std::string cmd, sw::redis::Redis *redis, sw::redis::Subscriber
                  std::map<int, std::vector<std::string>> *probing) {
     std::string address, duration, target;
 
-    if (cmd == "begin") {
-        std::cin >> duration;
-        begin(redis, duration);
+    if (cmd == "execute") {
+        execute(redis);
 
     } else if (cmd == "dump") {
         std::cin >> target;
@@ -209,9 +208,8 @@ bool executeFile(std::string file, sw::redis::Redis *redis, sw::redis::Subscribe
 
             std::cout << line << std::endl;
 
-            if (operation == "begin") {
-                command >> duration;
-                begin(redis, duration);
+            if (operation == "execute") {
+                execute(redis);
 
             } else if (operation == "dump") {
                 command >> target;

@@ -13,11 +13,11 @@
 #include "Client.h"
 #include "Prober.h"
 
-Client::Client(int id) : _id(id) {
+Client::Client(int id, long keyN) : _id(id), _keyN(keyN) {
     findProcesses();
 }
 
-Client::Client(int id, std::shared_ptr<grpc::Channel> channel) : _id(id),
+Client::Client(int id, long keyN, std::shared_ptr<grpc::Channel> channel) : _id(id), _keyN(keyN),
         _stub(messages::Client::NewStub(channel)) {
     findProcesses();
 }
@@ -44,15 +44,6 @@ void Client::findProcesses() {
     }
 }
 
-void Client::sendMessage(std::string address, messages::BeginRequest *request) {
-    createStub(address);
-    AsyncClientCall* call = new AsyncClientCall();
-    call->address = address;
-    call->responseReader = _stub->PrepareAsyncbegin(&call->context, *request, &_cq);
-    call->responseReader->StartCall();
-    call->responseReader->Finish(&call->reply, &call->status, (void*) call);
-}
-
 void Client::createStub(std::string address) {
     auto args = grpc::ChannelArguments();
     args.SetMaxReceiveMessageSize(1000 * 1024 * 1024);  // 1 GB
@@ -77,16 +68,27 @@ std::string Client::getDatacenter(std::string ip) {
     }
 }
 
-void Client::begin(int duration) {
-    messages::BeginRequest request;
-    request.set_duration(duration);
+void Client::execute() {
+    messages::TransactionRequest request;
+    messages::TransactionReply reply;
+    request.set_clientid(this->id());
+    request.set_messageid(this->counter());
+    this->incrementCounter();
 
-    // Thread to wait for replies
-    std::thread (&Client::AsyncCompleteRpc, this).detach();
+    std::vector<long> keys = std::vector<long>({0, 1});
+    std::map<std::string, std::vector<long>> *partitions = getPartitions(keys);
+    for (auto &[ip, keys] : *partitions) {
+        createStub(ip + ":" + SERVER_PORT);
+        grpc::ClientContext context;
+        grpc::Status status = _stub->execute(&context, request, &reply);
 
-    // Broadcast begin to servers
-    for (auto const &[id, ip] : this->_servers) {
-        sendMessage(ip + ":" + SERVER_PORT, &request);
+        if (status.ok()) {
+            std::cout << "Transaction executed: " << request.clientid() << "-" << request.messageid() << '\n' << std::endl;
+
+        } else {
+            std::cerr << "-> Failed to execute transaction " << request.clientid() << ":" << request.messageid() << "\n" <<
+                      "\tError " << status.error_code() << ": " << status.error_message() << '\n' << std::endl;
+        }
     }
 }
 
@@ -143,24 +145,23 @@ std::vector<std::string>* Client::probe(std::string address, int duration) {
     return probing;
 }
 
-void Client::AsyncCompleteRpc() {
-    void *gotTag;
-    bool ok = false;
+std::map<std::string, std::vector<long>>* Client::getPartitions(std::vector<long> keys) {
+    std::map<std::string, std::vector<long>> *partitions = new std::map<std::string, std::vector<long>>();
+    long partitionSize = this->keyN() / this->servers().size();
 
-    // Wait until the next response in the completion queue is ready
-    while (_cq.Next(&gotTag, &ok)) {
-        // Tag = memory location of the call
-        AsyncClientCall *call = static_cast<AsyncClientCall*>(gotTag);
-        GPR_ASSERT(ok);
+    for (long key : keys) {
+        for (auto &[id, ip] : this->servers()) {
+            // Check if the key is in the partition
+            if ((key >= partitionSize * id && key < partitionSize * (id + 1)) ||
+                (key == this->keyN() && this->keyN() % 2 == 0 && id == this->servers().size() - 1)) {  // Last key of an odd number of keys ([0 - N])
+                if (!partitions->count(ip)) {
+                    partitions->insert({ip, std::vector<long>()});
+                }
 
-        if (call->status.ok()) {
-            std::cout << "-> Successfully sent begin signal to " << call->address << '\n' << std::endl;
-
-        } else {
-            std::cerr << "-> Failed to send begin signal to " << call->address << "\n" <<
-                "\tError " << call->status.error_code() << ": " << call->status.error_message() << '\n' << std::endl;
+                partitions->at(ip).push_back(key);
+            }
         }
-
-        delete call;
     }
+
+    return partitions;
 }

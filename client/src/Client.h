@@ -17,28 +17,18 @@
 class Client {
 
 private:
-    // Container for information and state
-    struct AsyncClientCall {
-        std::string address;
-        messages::BeginReply reply;
-        grpc::ClientContext context;
-        grpc::Status status;
-
-        std::unique_ptr<grpc::ClientAsyncResponseReader<messages::BeginReply>> responseReader;
-    };
-
     int _id = 0;            // Client ID
     long _counter = 0;      // Local message counter
 
     std::map<int, std::string> _servers;
+    long _keyN = 0;
     
     std::unique_ptr<messages::Client::Stub> _stub;
-    grpc::CompletionQueue _cq;                          // Producer-consumer queue for asynchronous communication
 
 public:
-    Client(int id);
+    Client(int id, long keyN);
 
-    Client(int id, std::shared_ptr<grpc::Channel> channel);
+    Client(int id, long keyN, std::shared_ptr<grpc::Channel> channel);
 
     ~Client() {}
 
@@ -52,6 +42,10 @@ public:
 
     std::map<int, std::string> servers() {
         return this->_servers;
+    }
+
+    long keyN() {
+        return this->_keyN;
     }
 
     /**
@@ -76,7 +70,10 @@ public:
 
     void createStub(std::string address);
 
-    void sendMessage(std::string address, messages::BeginRequest *request);
+    /**
+     * Executes a remote request for a transaction.
+     */
+    void execute();
 
     /**
      * @brief Gets the datacenter of the specified server.
@@ -85,13 +82,6 @@ public:
      * @return Datacenter name.
      */
     std::string getDatacenter(std::string ip);
-
-    /**
-     * @brief Begin the message exchange between servers.
-     * 
-     * @param duration Duration (seconds) the servers are going to exchange messages for.
-     */
-    void begin(int duration);
 
     /**
      * @brief Fetches the log of messages from the servers.
@@ -109,7 +99,13 @@ public:
      */
     std::vector<std::string>* probe(std::string address, int duration);
 
-    void AsyncCompleteRpc();
+private:
+    /**
+     * Gets the partitions to contact pertaining the specified transaction.
+     * @param keys Keys used by the transaction.
+     * @return Vector of partitions to contact with the respective keys.
+     */
+    std::map<std::string, std::vector<long>>* getPartitions(std::vector<long> keys);
 
 };
 

@@ -4,21 +4,21 @@ package messages;
 
 import "proto/structs.proto";
 
+// Transaction
+message TransactionRequest {
+    uint32 clientId = 1;
+    uint64 messageId = 2;
+}
+
+message TransactionReply {
+    ReplyCode code = 1;
+}
+
 // Request for the datacenter name
 message DatacenterRequest {}
 
 message DatacenterReply {
     string datacenter = 1;
-}
-
-// Request for servers to start messaging
-message BeginRequest {
-    // Duration (seconds) the servers will exchange messages for
-    uint32 duration = 1;
-}
-
-message BeginReply {
-    ReplyCode code = 1;
 }
 
 // Request for the message log of the server
@@ -32,7 +32,7 @@ message LogReply {
 }
 
 service Client {
+    rpc execute(TransactionRequest) returns (TransactionReply) {}
     rpc datacenter(DatacenterRequest) returns (DatacenterReply) {}
-    rpc begin (BeginRequest) returns (BeginReply) {}
     rpc log(LogRequest) returns (LogReply) {}
 }

@@ -26,6 +26,26 @@ public:
     ~ClientServiceImpl() {
         _server = nullptr;
     }
+
+    /**
+     * @brief Queries for the server datacenter.
+     *
+     * @param context
+     * @param request
+     * @param reply
+     * @return grpc::Status
+     */
+    virtual grpc::Status execute(grpc::ServerContext *context, const messages::TransactionRequest *request,
+                                    messages::TransactionReply *reply) override {
+        std::cout << "-> Received transaction request\n" << std::endl;
+
+        // Deliver the message
+        _server->insertLog(request->clientid(), request->messageid());
+
+        reply->set_code(messages::ReplyCode::OK);
+        return grpc::Status::OK;
+    }
+
     /**
      * @brief Queries for the server datacenter.
      *
@@ -44,48 +64,6 @@ public:
         }
 
         reply->set_datacenter(datacenter);
-        return grpc::Status::OK;
-    }
-
-    /**
-     * @brief Activates the message exchange.
-     * 
-     * @param context 
-     * @param request 
-     * @param reply 
-     * @return grpc::Status 
-     */
-    virtual grpc::Status begin(grpc::ServerContext *context, const messages::BeginRequest *request,
-            messages::BeginReply *reply) override {
-        std::cout << "-> Received begin signal\n" << std::endl;
-
-        std::chrono::steady_clock::time_point start = std::chrono::steady_clock::now();
-        // Sending messages to the other servers
-        while (std::chrono::duration_cast<std::chrono::seconds>(std::chrono::steady_clock::now() - start).count() < request->duration()) {
-            messages::MessageRequest msgRequest;
-            messages::MessageReply msgReply;
-
-            std::shared_lock<std::shared_mutex> lock(*(_server->msgCounterMutex()));
-            msgRequest.set_id(_server->id());
-            msgRequest.set_msgid(_server->msgCounter());
-
-            // Deliver the message to itself first
-            _server->insertLog(_server->id(), _server->msgCounter());
-            lock.unlock();
-
-            _server->incrementMsgCounter();
-
-            for (auto const &[id, ip] : _server->servers()) {
-                // Dont send a message to itself
-                if ((ip + ":" + _server->port()) == (_server->address())) {
-                    continue;
-                }
-
-                _server->sendMessage(ip + ":" + _server->port(), msgRequest, &msgReply);
-            }
-        }
-
-        reply->set_code(messages::ReplyCode::OK);
         return grpc::Status::OK;
     }
 
