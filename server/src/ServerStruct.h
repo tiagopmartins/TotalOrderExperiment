@@ -40,6 +40,8 @@ private:
     int _msgCounter;
     std::vector<std::string> _log;      // Message log
 
+    std::vector<double>* _zipfProbs;
+
     //std::map<std::pair<int, std::string>> messages; // Mapping between sequence numbers and messages
 
     // Queues
@@ -52,9 +54,9 @@ private:
     //std::map<std::pair<std::string, int>> delays;
 
 public:
-    ServerStruct(std::string host);
+    ServerStruct(std::string host, std::vector<double>* zipfProbs);
 
-    ~ServerStruct() {}
+    ~ServerStruct();
 
     std::map<int, std::string> servers() {
         return this->_servers;
@@ -130,6 +132,11 @@ public:
      * @return Address of the leader.
      */
     std::string electLeader();
+
+    /**
+     * Selects the keys used by the partition.
+     */
+     void selectProbabilities(std::vector<double>* zipfProbs);
 
     /**
      * @brief Sends a message to the specified address.

@@ -35,6 +35,10 @@ ZipfGenerator::~ZipfGenerator() {
     delete sum_probs;
 }
 
+std::vector<double>* ZipfGenerator::sumProbs() {
+    return this->sum_probs;
+}
+
 int ZipfGenerator::next() {
     double z;                           // Uniform random number (0 < z < 1)
     int low, high, mid, zipf_value;     // Binary-search bounds

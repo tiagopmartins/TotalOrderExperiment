@@ -12,16 +12,18 @@
 
 #include "proto/messages.grpc.pb.h"
 
-const int EXPECTED_ARGS_N = 2;      // Expected number of arguments passed to the program
+const int EXPECTED_ARGS_N = 4;      // Expected number of arguments passed to the program
 
 /**
  * @brief Runs the server and it's services.
  * 
  * @param host 
- * @param port 
+ * @param keyN Number of keys.
+ * @param zipfParam Zipf distribution parameter.
  */
-void runServer(std::string host) {
-    std::shared_ptr<ServerStruct> serverStruct(new ServerStruct(host));
+void runServer(std::string host, long keyN, double zipfParam) {
+    ZipfGenerator zipf = ZipfGenerator(zipfParam, keyN);
+    std::shared_ptr<ServerStruct> serverStruct(new ServerStruct(host, zipf.sumProbs()));
 
     // Building the server and its services
     grpc::ServerBuilder builder;
@@ -41,13 +43,13 @@ void runServer(std::string host) {
 
 int main(int argc, char *argv[]) {
     if (argc != EXPECTED_ARGS_N) {
-        std::cerr << "Invalid number of arguments. Please, specify only the host of the server." << std::endl;
+        std::cerr << "Invalid number of arguments. Please, specify the host, the number of keys and the Zipf parameter." << std::endl;
         return -1;
     }
 
     std::string host(argv[1]);
     
-    runServer(host);
+    runServer(host, atol(argv[2]), std::stod(argv[3]));
 
     return 0;
 }

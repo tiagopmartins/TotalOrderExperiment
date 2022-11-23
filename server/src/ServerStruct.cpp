@@ -8,10 +8,15 @@
 
 #include "ServerStruct.h"
 
-ServerStruct::ServerStruct(std::string host) : Sequencer(),
+ServerStruct::ServerStruct(std::string host, std::vector<double>* zipfProbs) : Sequencer(),
         _host(host), _msgCounter(0) {
     findProcesses();
+    selectProbabilities(zipfProbs);
     this->_seq = electLeader();
+}
+
+ServerStruct::~ServerStruct() {
+    delete this->_zipfProbs;
 }
 
 void ServerStruct::findProcesses() {
@@ -42,6 +47,22 @@ void ServerStruct::createStub(std::string address) {
 
 std::string ServerStruct::electLeader() {
     return this->_servers[0];
+}
+
+void ServerStruct::selectProbabilities(std::vector<double>* zipfProbs) {
+    long keyN = zipfProbs->size(), partitionSize = keyN / this->servers().size();
+    std::vector<double>* partitionProbs = new std::vector<double>();
+
+    size_t start = partitionSize * this->id();
+    size_t end = partitionSize * (this->id() + 1);
+    for (size_t i = start; i < end; i++) {
+        partitionProbs->push_back(zipfProbs->at(i));
+    }
+
+    // If there is a last unattributed value, attribute it to the last partition
+    if (zipfProbs->size() % 2 == 1 && this->id() == (this->servers().size() - 1)) {
+        partitionProbs->push_back(zipfProbs->at(zipfProbs->size() - 1));
+    }
 }
 
 void ServerStruct::sendMessage(std::string address, messages::MessageRequest request,

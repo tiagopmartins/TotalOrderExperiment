@@ -14,20 +14,29 @@
 
 class ZipfGenerator : public LoadGeneratorInterface {
 
-public:
+private:
     std::vector<double> *sum_probs;
     double alpha;
     int n;
 
+public:
+
     ZipfGenerator(double _alpha, int _n);
 
     ~ZipfGenerator();
+
+    std::vector<double>* sumProbs();
 
     /**
      * Cumulative function of a discrete Zipf distribution.
      */
     void zipf();
 
+    /**
+     * Selects the next value for the next key.
+     *
+     * @return
+     */
     int next();
 
 };

@@ -13,11 +13,12 @@
 #include "Client.h"
 #include "Prober.h"
 
-Client::Client() {
+Client::Client(int id) : _id(id) {
     findProcesses();
 }
 
-Client::Client(std::shared_ptr<grpc::Channel> channel) : _stub(messages::Client::NewStub(channel)) {
+Client::Client(int id, std::shared_ptr<grpc::Channel> channel) : _id(id),
+        _stub(messages::Client::NewStub(channel)) {
     findProcesses();
 }
 

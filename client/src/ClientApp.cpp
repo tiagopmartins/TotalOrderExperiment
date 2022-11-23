@@ -32,7 +32,7 @@ int main(int argc, char *argv[]) {
         return -1;
     }
 
-    Client *client = new Client();
+    Client *client = new Client(0);
 
     // Redis subscriber
     sw::redis::Subscriber sub = redis->subscriber();

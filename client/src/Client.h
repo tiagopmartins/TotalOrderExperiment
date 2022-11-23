@@ -27,17 +27,28 @@ private:
         std::unique_ptr<grpc::ClientAsyncResponseReader<messages::BeginReply>> responseReader;
     };
 
+    int _id = 0;            // Client ID
+    long _counter = 0;      // Local message counter
+
     std::map<int, std::string> _servers;
     
     std::unique_ptr<messages::Client::Stub> _stub;
     grpc::CompletionQueue _cq;                          // Producer-consumer queue for asynchronous communication
 
 public:
-    Client();
+    Client(int id);
 
-    Client(std::shared_ptr<grpc::Channel> channel);
+    Client(int id, std::shared_ptr<grpc::Channel> channel);
 
     ~Client() {}
+
+    int id() {
+        return this->_id;
+    }
+
+    long counter() {
+        return this->_counter;
+    }
 
     std::map<int, std::string> servers() {
         return this->_servers;
@@ -49,6 +60,13 @@ public:
      * @return Vector with the addresses of the servers.
      */
     std::vector<std::string>* serverList();
+
+    /**
+     * Increments the value of the local client counter.
+     */
+     void incrementCounter() {
+         this->_counter++;
+     }
 
     /**
      * @brief Finds all the processes alive and stores them.
