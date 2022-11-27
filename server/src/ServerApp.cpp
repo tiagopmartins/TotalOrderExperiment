@@ -8,7 +8,6 @@
 #include "ClientServiceImpl.h"
 #include "MessageServiceImpl.h"
 #include "ProberServiceImpl.h"
-#include "zipf/ZipfGenerator.h"
 
 #include "proto/messages.grpc.pb.h"
 
@@ -22,8 +21,7 @@ const int EXPECTED_ARGS_N = 4;      // Expected number of arguments passed to th
  * @param zipfParam Zipf distribution parameter.
  */
 void runServer(std::string host, long keyN, double zipfParam) {
-    ZipfGenerator zipf = ZipfGenerator(zipfParam, keyN);
-    std::shared_ptr<ServerStruct> serverStruct(new ServerStruct(host, zipf.sumProbs()));
+    std::shared_ptr<ServerStruct> serverStruct(new ServerStruct(host));
 
     // Building the server and its services
     grpc::ServerBuilder builder;

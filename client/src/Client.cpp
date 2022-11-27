@@ -11,10 +11,18 @@
 #include "proto/client.grpc.pb.h"
 
 #include "Client.h"
-#include "Prober.h"
+#include "prober/Prober.h"
+#include "transaction-generator/TransactionGenerator.h"
 
 Client::Client(int id, long keyN) : _id(id), _keyN(keyN) {
     findProcesses();
+    this->transactionGenerator = new TransactionGenerator(1, 1000, this->servers().size());
+
+    std::vector<long> *transaction = this->transactionGenerator->transaction();
+    for (size_t i = 0; i < transaction->size(); i++) {
+        std::cout << transaction->at(i) << " ";
+    }
+    std::cout << std::endl;
 }
 
 Client::Client(int id, long keyN, std::shared_ptr<grpc::Channel> channel) : _id(id), _keyN(keyN),

@@ -9,6 +9,7 @@
 #include <grpcpp/grpcpp.h>
 
 #include "proto/client.grpc.pb.h"
+#include "transaction-generator/TransactionGenerator.h"
 
 /**
  * @brief Client representation.
@@ -25,12 +26,14 @@ private:
     
     std::unique_ptr<messages::Client::Stub> _stub;
 
+    TransactionGenerator *transactionGenerator;
+
 public:
     Client(int id, long keyN);
 
     Client(int id, long keyN, std::shared_ptr<grpc::Channel> channel);
 
-    ~Client() {}
+    ~Client();
 
     int id() {
         return this->_id;

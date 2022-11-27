@@ -8,7 +8,7 @@
 
 #include "proto/prober.grpc.pb.h"
 
-#include "Constants.h"
+#include "../Constants.h"
 
 /**
  * @brief Entity which tests the state of the network.
