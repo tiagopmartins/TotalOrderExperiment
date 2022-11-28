@@ -9,11 +9,11 @@
 #include "TransactionGenerator.h"
 
 
-TransactionGenerator::TransactionGenerator(int n, int serverN) :
-        keyN(n), serverN(serverN) {
-    this->generator = new ZipfGenerator(this->ZIPF_ALPHA, n);
+TransactionGenerator::TransactionGenerator(int n, int serverN, int transactionKeyN, double zipfAlpha) :
+        keyN(n), serverN(serverN), transactionKeyN(transactionKeyN) {
+    this->generator = new ZipfGenerator(zipfAlpha, n);
     this->keys = new std::map<long, int>();
-    matchKeys();
+    distributeKeys();
 }
 
 TransactionGenerator::~TransactionGenerator() {
@@ -26,12 +26,9 @@ int TransactionGenerator::keyServer(long key) {
 }
 
 std::vector<long>* TransactionGenerator::transaction() {
-    srand(time(nullptr));
-    int keyNumber = rand() % this->KEY_MAX + 1;
     std::vector<long> *transactionKeys = new std::vector<long>();
-
     int i = 0;
-    while (i < keyNumber) {
+    while (i < this->transactionKeyN) {
         int key = this->generator->next();
         // Not a duplicate key
         if (std::find(transactionKeys->begin(), transactionKeys->end(), key) == transactionKeys->end()) {
@@ -43,7 +40,7 @@ std::vector<long>* TransactionGenerator::transaction() {
     return transactionKeys;
 }
 
-void TransactionGenerator::matchKeys() {
+void TransactionGenerator::distributeKeys() {
     long partitionSize = ceil((float) this->keyN / this->serverN);
 
     // Shuffle the keys to perform load-balancing

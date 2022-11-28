@@ -22,16 +22,15 @@ private:
     long _counter = 0;      // Local message counter
 
     std::map<int, std::string> _servers;
+    std::map<std::string, std::vector<long>*> _transactions;
     long _keyN = 0;
     
     std::unique_ptr<messages::Client::Stub> _stub;
 
-    TransactionGenerator *transactionGenerator;
+    TransactionGenerator *_transactionGenerator;
 
 public:
-    Client(int id, long keyN);
-
-    Client(int id, long keyN, std::shared_ptr<grpc::Channel> channel);
+    Client(int id, long keyN, int transactionKeyN, double zipfAlpha);
 
     ~Client();
 
@@ -47,8 +46,16 @@ public:
         return this->_servers;
     }
 
+    std::map<std::string, std::vector<long>*> transactions() {
+        return this->_transactions;
+    }
+
     long keyN() {
         return this->_keyN;
+    }
+
+    TransactionGenerator* transactionGenerator() {
+        return this->_transactionGenerator;
     }
 
     /**
@@ -101,14 +108,6 @@ public:
      * @return Vector with the times.
      */
     std::vector<std::string>* probe(std::string address, int duration);
-
-private:
-    /**
-     * Gets the partitions to contact pertaining the specified transaction.
-     * @param keys Keys used by the transaction.
-     * @return Vector of partitions to contact with the respective keys.
-     */
-    std::map<std::string, std::vector<long>>* getPartitions(std::vector<long> keys);
 
 };
 

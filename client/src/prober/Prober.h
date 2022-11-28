@@ -21,7 +21,7 @@ private:
 
     std::unique_ptr<messages::Prober::Stub> _stub;
 
-    std::vector<std::vector<double>>* _times;   // Mapping between addresses and times (per second)
+    std::vector<std::vector<double>>* _times;   // RTT times per second
 
     /**
      * @brief Finds all the processes alive and stores them.
@@ -51,8 +51,7 @@ public:
     double sendProbingMessage(std::string address);
 
     /**
-     * @brief Evaluates the stability of the network, to a certain address,
-     * including the time messages take to arrive. Sends the results to the Redis database.
+     * @brief Evaluates the stability of the network, to a certain address, using RTTs.
      *
      * @duration Duration of the probing.
      * @return Vector divided into sections (vectors) containing the values of the

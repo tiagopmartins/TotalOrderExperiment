@@ -11,11 +11,11 @@
 #include "Client.h"
 #include "Constants.h"
 
-const int EXPECTED_ARGS_N = 3;      // Expected number of arguments passed to the program
+const int EXPECTED_ARGS_N = 5;      // Expected number of arguments passed to the program
 
 int main(int argc, char *argv[]) {
     if (argc != EXPECTED_ARGS_N) {
-        std::cerr << "Invalid number of arguments. Please, specify the host and the number of keys." << std::endl;
+        std::cerr << "Invalid number of arguments. Please, specify the host, number of keys, number of keys per transaction and the Zipf distribution alpha." << std::endl;
         return -1;
     }
 
@@ -32,7 +32,7 @@ int main(int argc, char *argv[]) {
         return -1;
     }
 
-    Client *client = new Client(0, atol(argv[2]));
+    Client *client = new Client(0, atol(argv[2]), atoi(argv[3]), std::stod(argv[4]));
 
     // Redis subscriber
     sw::redis::Subscriber sub = redis->subscriber();

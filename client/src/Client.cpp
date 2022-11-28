@@ -14,20 +14,18 @@
 #include "prober/Prober.h"
 #include "transaction-generator/TransactionGenerator.h"
 
-Client::Client(int id, long keyN) : _id(id), _keyN(keyN) {
-    findProcesses();
-    this->transactionGenerator = new TransactionGenerator(keyN, this->servers().size());
 
-    std::vector<long> *transaction = this->transactionGenerator->transaction();
-    for (size_t i = 0; i < transaction->size(); i++) {
-        std::cout << transaction->at(i) << " ";
-    }
-    std::cout << std::endl;
+Client::Client(int id, long keyN, int transactionKeyN, double zipfAlpha) : _id(id), _keyN(keyN) {
+    findProcesses();
+    this->_transactionGenerator = new TransactionGenerator(keyN, this->servers().size(),
+                                                          transactionKeyN, zipfAlpha);
+    this->_transactions = std::map<std::string, std::vector<long>*>();
 }
 
-Client::Client(int id, long keyN, std::shared_ptr<grpc::Channel> channel) : _id(id), _keyN(keyN),
-        _stub(messages::Client::NewStub(channel)) {
-    findProcesses();
+Client::~Client() {
+    for (auto &[id, keys] : this->transactions()) {
+        delete keys;
+    }
 }
 
 std::vector<std::string>* Client::serverList() {
@@ -81,11 +79,22 @@ void Client::execute() {
     messages::TransactionReply reply;
     request.set_clientid(this->id());
     request.set_messageid(this->counter());
+
+    std::vector<long>* transaction = this->transactionGenerator()->transaction();
+    this->_transactions.insert({std::to_string(this->id()) + ":" + std::to_string(this->counter()), transaction});
     this->incrementCounter();
 
-    std::vector<long> keys = std::vector<long>({0, 1});
-    std::map<std::string, std::vector<long>> *partitions = getPartitions(keys);
-    for (auto &[ip, keys] : *partitions) {
+    std::map<int, std::vector<long>> keySets;   // Mapping between server IDs and keys
+    for (long &key : *transaction) {
+        int id = this->transactionGenerator()->keyServer(key);
+        if (keySets.count(id) == 0) {
+            keySets.insert({id, std::vector<long>()});
+        }
+        keySets[id].push_back(key);
+    }
+
+    for (auto &[id, keys] : keySets) {
+        std::string ip = this->servers()[id];
         createStub(ip + ":" + SERVER_PORT);
         grpc::ClientContext context;
         grpc::Status status = _stub->execute(&context, request, &reply);
@@ -124,7 +133,7 @@ std::vector<std::string>* Client::fetchLog() {
             }
 
         } else {
-            std::cerr << "-> Failed to fetch log from " << ip + ":" + SERVER_PORT << "\n" <<
+            std::cerr << "-> Failed to fetch log from " << ip + ":" + SERVER_PORT << '\n' <<
                 "\tError " << status.error_code() << ": " << status.error_message() << '\n' << std::endl;
         }
     }
@@ -151,25 +160,4 @@ std::vector<std::string>* Client::probe(std::string address, int duration) {
     }
 
     return probing;
-}
-
-std::map<std::string, std::vector<long>>* Client::getPartitions(std::vector<long> keys) {
-    std::map<std::string, std::vector<long>> *partitions = new std::map<std::string, std::vector<long>>();
-    long partitionSize = this->keyN() / this->servers().size();
-
-    for (long key : keys) {
-        for (auto &[id, ip] : this->servers()) {
-            // Check if the key is in the partition
-            if ((key >= partitionSize * id && key < partitionSize * (id + 1)) ||
-                (key == this->keyN() && this->keyN() % 2 == 0 && id == this->servers().size() - 1)) {  // Last key of an odd number of keys ([0 - N])
-                if (!partitions->count(ip)) {
-                    partitions->insert({ip, std::vector<long>()});
-                }
-
-                partitions->at(ip).push_back(key);
-            }
-        }
-    }
-
-    return partitions;
 }
