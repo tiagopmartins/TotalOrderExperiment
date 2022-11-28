@@ -16,7 +16,7 @@
 
 Client::Client(int id, long keyN) : _id(id), _keyN(keyN) {
     findProcesses();
-    this->transactionGenerator = new TransactionGenerator(1, 1000, this->servers().size());
+    this->transactionGenerator = new TransactionGenerator(keyN, this->servers().size());
 
     std::vector<long> *transaction = this->transactionGenerator->transaction();
     for (size_t i = 0; i < transaction->size(); i++) {

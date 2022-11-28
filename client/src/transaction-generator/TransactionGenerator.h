@@ -13,22 +13,24 @@
 class TransactionGenerator {
 
 private:
-    long KEY_MAX = 4;   // Maximum number of keys accessed
+    long KEY_MAX = 4;           // Maximum number of keys accessed
+    double ZIPF_ALPHA = 1;      // Zipf distribution parameter
 
     long keyN;
     int serverN;
-    ZipfGenerator *generator;  // Probabilities generator
+    ZipfGenerator *generator;   // Probabilities generator
+
+    std::map<long, int> *keys;  // Mapping between keys and server IDs
 
 public:
 
     /**
      * Constructor. Constructs the probability table based on a Zipf distribution.
      *
-     * @param alpha Zipf alpha.
      * @param n Number of transactions.
      * @param serverN Number of servers.
      */
-    TransactionGenerator(double alpha, int n, int serverN);
+    TransactionGenerator(int n, int serverN);
 
     ~TransactionGenerator();
 
@@ -47,6 +49,13 @@ public:
      * @return Key vector.
      */
     std::vector<long>* transaction();
+
+private:
+
+    /**
+     * @brief Matches keys to the correspondent server IDs.
+     */
+    void matchKeys();
 
 };
 

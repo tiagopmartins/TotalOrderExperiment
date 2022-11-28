@@ -9,7 +9,9 @@
 #include <math.h>               // Needed for pow()
 #include <assert.h>             // Needed for assert() macro
 #include <random>               // Needed for normal_distribution class
-#include <algorithm>            // Needed for shuffle()
+
+
+#include <iostream>
 
 
 ZipfGenerator::ZipfGenerator(double _alpha = 1.0, int _n = 1000) : alpha(_alpha), n(_n) {
@@ -26,9 +28,6 @@ ZipfGenerator::ZipfGenerator(double _alpha = 1.0, int _n = 1000) : alpha(_alpha)
     for (int i = 1; i <= n; i++) {
         sum_probs->at(i) = sum_probs->at(i - 1) + c / pow((double) i, alpha);
     }
-
-    // Shuffle keys for a better load-balancing
-    std::shuffle(sum_probs->begin(), sum_probs->end(), std::default_random_engine(rand_val(0)));
 }
 
 ZipfGenerator::~ZipfGenerator() {
@@ -62,6 +61,8 @@ int ZipfGenerator::next() {
             low = mid + 1;
         }
     } while (low <= high);
+
+    std::cout << zipf_value << std::endl;
 
     // Assert that zipf_value is between 1 and N
     assert((zipf_value >= 1) && (zipf_value <= n));
