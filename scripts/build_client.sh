@@ -18,5 +18,8 @@ done
 echo -e "client:" >> hydro/cluster/server_ips.yml
 echo -e "    $PUBLIC_IP" >> hydro/cluster/server_ips.yml
 
+KEY_NUMBER=1000
+ZIPF_ALPHA=1.0
+
 # Running the client.
-./build/client/client $PUBLIC_IP
+./build/client/client $PUBLIC_IP $KEY_NUMBER $ZIPF_ALPHA
