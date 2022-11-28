@@ -28,18 +28,23 @@ int TransactionGenerator::keyServer(long key) {
 std::vector<long>* TransactionGenerator::transaction() {
     srand(time(nullptr));
     int keyNumber = rand() % this->KEY_MAX + 1;
-    std::vector<long> *transactionKeys = new std::vector<long>(keyNumber);
+    std::vector<long> *transactionKeys = new std::vector<long>();
 
-    for (int i = 0; i < keyNumber; i++) {
-        transactionKeys->at(i) = this->generator->next();
+    int i = 0;
+    while (i < keyNumber) {
+        int key = this->generator->next();
+        // Not a duplicate key
+        if (std::find(transactionKeys->begin(), transactionKeys->end(), key) == transactionKeys->end()) {
+            transactionKeys->push_back(key);
+            i++;
+        }
     }
 
     return transactionKeys;
 }
 
 void TransactionGenerator::matchKeys() {
-    //long partitionSize = ceil((float) this->keyN / this->serverN);
-    long partitionSize = ceil((float) this->keyN / 4);
+    long partitionSize = ceil((float) this->keyN / this->serverN);
 
     // Shuffle the keys to perform load-balancing
     std::vector<long> keyList = std::vector<long>();
@@ -50,7 +55,7 @@ void TransactionGenerator::matchKeys() {
                  std::default_random_engine(std::chrono::system_clock::now().time_since_epoch().count()));
 
     int id = 0;
-    while (id < 4) {
+    while (id < this->serverN) {
         for (size_t i = partitionSize * id; i < partitionSize * (id + 1) && i < this->keyN; i++) {
             this->keys->insert({keyList[i], id});
         }

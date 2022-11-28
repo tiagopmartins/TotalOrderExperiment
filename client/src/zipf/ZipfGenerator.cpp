@@ -11,9 +11,6 @@
 #include <random>               // Needed for normal_distribution class
 
 
-#include <iostream>
-
-
 ZipfGenerator::ZipfGenerator(double _alpha = 1.0, int _n = 1000) : alpha(_alpha), n(_n) {
     sum_probs = new std::vector<double>(n + 1);
 
@@ -61,8 +58,6 @@ int ZipfGenerator::next() {
             low = mid + 1;
         }
     } while (low <= high);
-
-    std::cout << zipf_value << std::endl;
 
     // Assert that zipf_value is between 1 and N
     assert((zipf_value >= 1) && (zipf_value <= n));
