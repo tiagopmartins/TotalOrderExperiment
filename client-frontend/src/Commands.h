@@ -1,6 +1,7 @@
 #ifndef TOTAL_ORDER_EXPERIMENT_COMMANDS_H
 #define TOTAL_ORDER_EXPERIMENT_COMMANDS_H
 
+#include <utility>
 #include <string>
 #include <sw/redis++/redis++.h>
 
@@ -69,12 +70,22 @@ void dumpProbing(std::map<int, std::vector<std::string>> *probing, std::string f
 void waitConsume(sw::redis::Subscriber *sub, bool *consumed);
 
 /**
+ * Analysis the total order present in a batch of logs, choosing tge best one.
+ * The best total order is defined by how much affinity it has with the other logs.
+ *
+ * @param logs Mapping between server IDs and their respective logs.
+ * @return ID of the server with the best total order found amongst the logs with
+ * the respective classification.
+ */
+std::pair<int, float> toAnalysis(std::map<int, std::vector<std::string>> *logs);
+
+/**
  * @brief Measures the accuracy of the total order obtained by a server.
  *
  * @param toLog Log containing a total order.
  * @param log Normal log of a server.
  * @return Accuracy.
  */
-float toAccuracy(std::vector<std::string> &toLog, std::vector<std::string> &log);
+float toAccuracy(std::vector<std::string> *toLog, std::vector<std::string> *log);
 
 #endif //TOTAL_ORDER_EXPERIMENT_COMMANDS_H

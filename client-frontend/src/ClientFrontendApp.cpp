@@ -12,8 +12,8 @@
 const int EXPECTED_ARGS_N = 2;
 const int EXPECTED_ARGS_N_FILE = 3;
 
-//const int REDIS_EXTERNAL_PORT = 30000;
-const int REDIS_EXTERNAL_PORT = 6379;
+const int REDIS_EXTERNAL_PORT = 30000;
+//const int REDIS_EXTERNAL_PORT = 6379;
 
 
 /**
@@ -305,6 +305,25 @@ int main(int argc, char *argv[]) {
             return 0;
         }
     }
+
+    // TO Accuracy function test
+    /*
+    std::vector<std::string> toLog = std::vector<std::string>();
+    toLog.push_back("A");
+    toLog.push_back("B");
+    toLog.push_back("C");
+    toLog.push_back("D");
+    toLog.push_back("E");
+
+    std::vector<std::string> log = std::vector<std::string>();
+    log.push_back("A");
+    log.push_back("B");
+    log.push_back("E");
+    log.push_back("C");
+    log.push_back("D");
+
+    std::cout << "Acc: " << toAccuracy(&toLog, &log) << std::endl;
+    */
 
     while (true) {
         std::string cmd;
