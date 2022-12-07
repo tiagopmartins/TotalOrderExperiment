@@ -12,8 +12,8 @@
 const int EXPECTED_ARGS_N = 2;
 const int EXPECTED_ARGS_N_FILE = 3;
 
-const int REDIS_EXTERNAL_PORT = 30000;
-//const int REDIS_EXTERNAL_PORT = 6379;
+//const int REDIS_EXTERNAL_PORT = 30000;
+const int REDIS_EXTERNAL_PORT = 6379;
 
 
 /**
@@ -23,25 +23,16 @@ const int REDIS_EXTERNAL_PORT = 30000;
  * @param logs Map between the server address and a vector of logs for it.
  * @param logsList List of strings containing data.
  *      Form: ["SERVER$address1", "log1", "log2", ..., "SERVER$address2", ...]
- * @param sequencer Sequencer's address.
  */
-void readLogs(std::map<std::string, std::vector<std::string>> *logs, std::vector<std::string> *logsList,
-              std::string *sequencer) {
+void readLogs(std::map<std::string, std::vector<std::string>> *logs, std::vector<std::string> *logsList) {
     std::string currentServer = "";
     for (auto it = logsList->begin(); it != logsList->end(); it++) {
         std::string token;
         std::stringstream ss(*it);
         getline(ss, token, '$');
 
-        if (token == "SERVER" || token == "SEQUENCER") {
-            if (token == "SEQUENCER") {
-                getline(ss, token, ' ');    // new server address
-                *sequencer = token;
-
-            } else {
-                getline(ss, token, ' ');    // new server address
-            }
-
+        if (token == "SERVER") {
+            getline(ss, token, ' ');    // new server address
             logs->insert({token, std::vector<std::string>()});
             currentServer = token;
             continue;
@@ -131,13 +122,12 @@ void printServers(std::map<std::string, std::vector<std::string>> *servers) {
  * @param sub Redis subscriber.
  * @param consumed Pointer to a flag to know if the message was already
  * consumed by the subscriber.
- * @param sequencer Sequencer's address amongst the replicas.
  * @param logs Pointer to a vector containing the logs.
  * @param probing Pointer to a vector containing the probing results.
  * @return true if the program exited.
  */
 bool executeCall(std::string cmd, sw::redis::Redis *redis, sw::redis::Subscriber *sub,
-                 bool *consumed, std::string *sequencer, std::map<std::string, std::vector<std::string>> *logs,
+                 bool *consumed, std::map<std::string, std::vector<std::string>> *logs,
                  std::map<int, std::vector<std::string>> *probing) {
     std::string address, duration, target;
 
@@ -150,7 +140,7 @@ bool executeCall(std::string cmd, sw::redis::Redis *redis, sw::redis::Subscriber
             dumpProbing(probing, target);
 
         } else if (target == "logs") {
-            dumpLogs(logs, sequencer, target);
+            dumpLogs(logs, target);
 
         } else {
             std::cerr << "Invalid probing target.\n" << std::endl;
@@ -187,13 +177,12 @@ bool executeCall(std::string cmd, sw::redis::Redis *redis, sw::redis::Subscriber
  * @param sub Redis subscriber.
  * @param consumed Pointer to a flag to know if the message was already
  * consumed by the subscriber.
- * @param sequencer Sequencer's address amongst the replicas.
  * @param logs Pointer to a vector containing the logs.
  * @param probing Pointer to a vector containing the probing results.
  * @return true if the program exited.
  */
 bool executeFile(std::string file, sw::redis::Redis *redis, sw::redis::Subscriber *sub,
-                 bool *consumed, std::string *sequencer, std::map<std::string, std::vector<std::string>> *logs,
+                 bool *consumed, std::map<std::string, std::vector<std::string>> *logs,
                  std::map<int, std::vector<std::string>> *probing) {
     std::ifstream commands(file);
 
@@ -217,7 +206,7 @@ bool executeFile(std::string file, sw::redis::Redis *redis, sw::redis::Subscribe
                     dumpProbing(probing, target);
 
                 } else if (target == "logs") {
-                    dumpLogs(logs, sequencer, target);
+                    dumpLogs(logs, target);
 
                 } else {
                     std::cerr << "Invalid probing target.\n" << std::endl;
@@ -264,7 +253,6 @@ int main(int argc, char *argv[]) {
     }
 
     bool consumed = false;
-    std::string sequencer = ""; // Sequencer's address amongst the servers
     auto servers = new std::map<std::string, std::vector<std::string>>();
     auto logs = new std::map<std::string, std::vector<std::string>>();
     auto probing = new std::map<int, std::vector<std::string>>();
@@ -284,11 +272,11 @@ int main(int argc, char *argv[]) {
     sw::redis::Subscriber sub = redis->subscriber();
     sub.subscribe("to-client");
 
-    sub.on_message([&consumed, &sequencer, &servers, &logs, &probing, &redis](std::string channel, std::string msg) {
+    sub.on_message([&consumed, &servers, &logs, &probing, &redis](std::string channel, std::string msg) {
         if (!msg.compare("benchmarks")) {
             std::vector<std::string> *logsList = new std::vector<std::string>();
             redis->lrange("logs", 0, -1, std::back_inserter(*logsList));
-            readLogs(logs, logsList, &sequencer);
+            readLogs(logs, logsList);
 
         } else if (!msg.compare("probing")) {
             probing->clear();
@@ -309,7 +297,7 @@ int main(int argc, char *argv[]) {
     // Execute commands inside the file passed as input
     if (argc == EXPECTED_ARGS_N_FILE) {
         // Execute call and check if the program exited
-        if (executeFile(argv[EXPECTED_ARGS_N_FILE - 1], redis, &sub, &consumed, &sequencer, logs, probing)) {
+        if (executeFile(argv[EXPECTED_ARGS_N_FILE - 1], redis, &sub, &consumed, logs, probing)) {
             delete servers;
             delete logs;
             delete probing;
@@ -323,7 +311,7 @@ int main(int argc, char *argv[]) {
         std::cin >> cmd;
 
         // Execute call and check if the program exited
-        if(executeCall(cmd, redis, &sub, &consumed, &sequencer, logs, probing)) {
+        if(executeCall(cmd, redis, &sub, &consumed, logs, probing)) {
             delete servers;
             delete logs;
             delete probing;

@@ -48,10 +48,9 @@ void getServers(sw::redis::Redis *redis, sw::redis::Subscriber *sub, bool *consu
  * @brief Prints the logs and statistics for each server in a human-friendly way.
  *
  * @param logs Map between the server address and a vector of logs for it.
- * @param sequencer Sequencer's address amongst the servers.
  * @param file File to dump the contents into.
  */
-void dumpLogs(std::map<std::string, std::vector<std::string>> *logs, std::string *sequencer, std::string file);
+void dumpLogs(std::map<std::string, std::vector<std::string>> *logs, std::string file);
 
 /**
  * Dumps the probing results from the vector given as input into the specified file.
@@ -70,14 +69,12 @@ void dumpProbing(std::map<int, std::vector<std::string>> *probing, std::string f
 void waitConsume(sw::redis::Subscriber *sub, bool *consumed);
 
 /**
- * @brief Measures the accuracy of the total order done by each server.
- * The orders obtained by the servers are compared to the sequencer's order using sub-sequences.
+ * @brief Measures the accuracy of the total order obtained by a server.
  *
- * @param logs Map between the server address and a vector of logs for it.
- * @param sequencer Sequencer's address amongst the servers.
- *
- * @return Mapping between addresses and accuracies.
+ * @param toLog Log containing a total order.
+ * @param log Normal log of a server.
+ * @return Accuracy.
  */
-std::map<std::string, float>* toAccuracy(std::map<std::string, std::vector<std::string>> *logs, std::string *sequencer);
+float toAccuracy(std::vector<std::string> &toLog, std::vector<std::string> &log);
 
 #endif //TOTAL_ORDER_EXPERIMENT_COMMANDS_H

@@ -27,8 +27,7 @@ message LogRequest {}
 message LogReply {
     ReplyCode code = 1;
     string address = 2;
-    bool sequencer = 3;
-    repeated string log = 4;
+    repeated string log = 3;
 }
 
 service Client {

@@ -34,21 +34,13 @@ void getServers(sw::redis::Redis *redis, sw::redis::Subscriber *sub, bool *consu
     waitConsume(sub, consumed);
 }
 
-void dumpLogs(std::map<std::string, std::vector<std::string>> *logs, std::string *sequencer, std::string file) {
-    std::map<std::string, float>* accuracy = toAccuracy(logs, sequencer);
-
+void dumpLogs(std::map<std::string, std::vector<std::string>> *logs, std::string file) {
     std::ofstream output(file + ".txt");
     for (auto const &[address, vector] : *logs) {
         output << "-> " << address << '\n';
         for (std::string const &value : vector) {
             output << '\t' << value << '\n';
         }
-
-        float acc = 100;
-        if (address != *sequencer) {
-            acc = accuracy->at(address);
-        }
-        output << '\n' << "\tAccuracy: " << acc << '%' << std::endl;
     }
     std::cout << "Successfully dumped contents into file.\n" << std::endl;
 }
@@ -87,6 +79,7 @@ void waitConsume(sw::redis::Subscriber *sub, bool *consumed) {
     *consumed = false;  // reset flag
 }
 
+/*
 std::map<std::string, float>* toAccuracy(std::map<std::string, std::vector<std::string>> *logs, std::string *sequencer) {
     std::vector<std::string> *seqOrder = &(logs->at(*sequencer));
     auto accuracy = new std::map<std::string, float>();
@@ -125,4 +118,9 @@ std::map<std::string, float>* toAccuracy(std::map<std::string, std::vector<std::
     }
 
     return accuracy;
+}
+*/
+
+float toAccuracy(std::vector<std::string> &toLog, std::vector<std::string> &log) {
+    return 0;
 }

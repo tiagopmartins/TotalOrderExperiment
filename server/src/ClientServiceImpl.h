@@ -78,14 +78,6 @@ public:
         }
         lock.unlock();
 
-        // Warn about being the sequencer or not
-        if (this->_server->seq() == this->_server->host()) {
-            reply->set_sequencer(true);
-
-        } else {
-            reply->set_sequencer(false);
-        }
-
         reply->set_address(_server->address());
         reply->set_code(messages::ReplyCode::OK);
         return grpc::Status::OK;
