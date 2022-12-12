@@ -129,10 +129,11 @@ void printServers(std::map<std::string, std::vector<std::string>> *servers) {
 bool executeCall(std::string cmd, sw::redis::Redis *redis, sw::redis::Subscriber *sub,
                  bool *consumed, std::map<std::string, std::vector<std::string>> *logs,
                  std::map<int, std::vector<std::string>> *probing) {
-    std::string address, duration, target;
+    std::string address, duration, target, transactionN;
 
     if (cmd == "execute") {
-        execute(redis);
+        std::cin >> transactionN;
+        execute(redis, sub, consumed, transactionN);
 
     } else if (cmd == "dump") {
         std::cin >> target;
@@ -189,7 +190,7 @@ bool executeFile(std::string file, sw::redis::Redis *redis, sw::redis::Subscribe
     if (commands.is_open()) {
         while (!commands.eof()) {
             std::string line, operation;
-            std::string address, duration, target;
+            std::string address, duration, target, transactionN;
 
             getline(commands, line);
             std::stringstream command(line);
@@ -198,7 +199,8 @@ bool executeFile(std::string file, sw::redis::Redis *redis, sw::redis::Subscribe
             std::cout << line << std::endl;
 
             if (operation == "execute") {
-                execute(redis);
+                command >> transactionN;
+                execute(redis, sub, consumed, transactionN);
 
             } else if (operation == "dump") {
                 command >> target;

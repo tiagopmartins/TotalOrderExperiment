@@ -9,8 +9,12 @@
  * Sends a transaction execute request.
  *
  * @param redis
+ * @param sub Redis subscriber.
+ * @param consumed Pointer to a consumed flag to know if the message was
+ * already consumed by the subscriber.
+ * @param transactionN Number of transactions to perform.
  */
-void execute(sw::redis::Redis *redis);
+void execute(sw::redis::Redis *redis, sw::redis::Subscriber *sub, bool *consumed, std::string transactionN);
 
 /**
  * Sends a fetch signal through Redis to get the results from the "begin".

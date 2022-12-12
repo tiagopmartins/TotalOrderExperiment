@@ -74,37 +74,40 @@ std::string Client::getDatacenter(std::string ip) {
     }
 }
 
-void Client::execute() {
-    messages::TransactionRequest request;
-    messages::TransactionReply reply;
-    request.set_clientid(this->id());
-    request.set_messageid(this->counter());
+void Client::execute(long transactionN) {
+    long currTransaction = 0;
+    while(currTransaction < transactionN) {
+        messages::TransactionRequest request;
+        messages::TransactionReply reply;
+        request.set_clientid(this->id());
+        request.set_messageid(this->counter());
 
-    std::vector<long>* transaction = this->transactionGenerator()->transaction();
-    this->_transactions.insert({std::to_string(this->id()) + ":" + std::to_string(this->counter()), transaction});
-    this->incrementCounter();
+        std::vector<long>* transaction = this->transactionGenerator()->transaction();
+        this->_transactions.insert({std::to_string(this->id()) + ":" + std::to_string(this->counter()), transaction});
+        this->incrementCounter();
 
-    std::map<int, std::vector<long>> keySets;   // Mapping between server IDs and keys
-    for (long &key : *transaction) {
-        int id = this->transactionGenerator()->keyServer(key);
-        if (keySets.count(id) == 0) {
-            keySets.insert({id, std::vector<long>()});
+        std::map<int, std::vector<long>> keySets;   // Mapping between server IDs and keys
+        for (long &key : *transaction) {
+            int id = this->transactionGenerator()->keyServer(key);
+            if (keySets.count(id) == 0) {
+                keySets.insert({id, std::vector<long>()});
+            }
+            keySets[id].push_back(key);
         }
-        keySets[id].push_back(key);
-    }
 
-    for (auto &[id, keys] : keySets) {
-        std::string ip = this->servers()[id];
-        createStub(ip + ":" + SERVER_PORT);
-        grpc::ClientContext context;
-        grpc::Status status = _stub->execute(&context, request, &reply);
+        for (auto &[id, keys] : keySets) {
+            std::string ip = this->servers()[id];
+            createStub(ip + ":" + SERVER_PORT);
+            grpc::ClientContext context;
+            grpc::Status status = _stub->execute(&context, request, &reply);
 
-        if (status.ok()) {
-            std::cout << "Transaction executed: " << request.clientid() << "-" << request.messageid() << '\n' << std::endl;
+            if (status.ok()) {
+                std::cout << "Transaction executed: " << request.clientid() << "-" << request.messageid() << '\n' << std::endl;
 
-        } else {
-            std::cerr << "-> Failed to execute transaction " << request.clientid() << ":" << request.messageid() << "\n" <<
-                      "\tError " << status.error_code() << ": " << status.error_message() << '\n' << std::endl;
+            } else {
+                std::cerr << "-> Failed to execute transaction " << request.clientid() << ":" << request.messageid() << "\n" <<
+                          "\tError " << status.error_code() << ": " << status.error_message() << '\n' << std::endl;
+            }
         }
     }
 }

@@ -8,9 +8,13 @@
 
 using json = nlohmann::json;
 
-void execute(sw::redis::Redis *redis) {
-    redis->publish("to-exp", "execute");
-    std::cout << "Successfully sent execute request.\n" << std::endl;
+void execute(sw::redis::Redis *redis, sw::redis::Subscriber *sub, bool *consumed, std::string transactionN) {
+    std::string msg = "execute ";
+    msg.append(transactionN);
+
+    redis->publish("to-exp", msg);
+    waitConsume(sub, consumed);
+    std::cout << "Successfully completed execute request.\n" << std::endl;
 }
 
 void fetch(sw::redis::Redis *redis, sw::redis::Subscriber *sub, bool *consumed) {
@@ -20,7 +24,6 @@ void fetch(sw::redis::Redis *redis, sw::redis::Subscriber *sub, bool *consumed) 
 }
 
 void probe(sw::redis::Redis *redis, sw::redis::Subscriber *sub, bool *consumed, std::string address, std::string duration) {
-    // Building the message to send
     std::string msg = "probe ";
     msg.append(address);
     msg.append(" ");

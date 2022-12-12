@@ -82,8 +82,10 @@ public:
 
     /**
      * Executes a remote request for a transaction.
+     *
+     * @param Number of transaction to perform.
      */
-    void execute();
+    void execute(long transactionN);
 
     /**
      * @brief Gets the datacenter of the specified server.

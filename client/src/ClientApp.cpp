@@ -44,7 +44,9 @@ int main(int argc, char *argv[]) {
         getline(ss, cmd, ' ');
 
         if (!cmd.compare("execute")) {
-            client->execute();
+            std::string transactionN;
+            getline(ss, transactionN, ' ');
+            client->execute(std::stol(transactionN));
 
         } else if (!cmd.compare("fetch")) {
             std::vector<std::string> *logs = client->fetchLog();

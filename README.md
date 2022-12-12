@@ -2,12 +2,12 @@
 
 ## Commands
 
-### begin
+### execute
 
-Starts a message exchange between all servers during the amount of time specified.
+Executes a transaction on a server (with keys generated from a Zipf distribution).
 
 ```
-begin seconds
+execute number-of-transactions
 ```
 
 ### dump
